@@ -12,7 +12,6 @@ import message.MessageEncryptor;
 public class PacketEncryptor {
 
 	public static byte[] encryptPacket(Packet packet) throws CipherException {
-		
 		ByteBuffer buffer = ByteBuffer.allocate(Packet.PACKET_CONST_LENGTH + packet.getWLen());
 		buffer.order(ByteOrder.BIG_ENDIAN);
 		buffer.put(Packet.bMagic);
