@@ -13,7 +13,7 @@ public class PacketTest {
 
 	@Test
 	public void encryptPackets_whenDecryptedPacket_thenShouldBeEqual() throws CipherException {
-		Packet p1 = new Packet((byte)2, 3245L, 5, 1, "Hello world");
+		Packet p1 = new Packet((byte)2, 3245L, 5, 1, "{\"key\":\"Hello world\"}");
 		var encryptedPacket = PacketEncryptor.encryptPacket(p1);
 		List<Packet> list = PacketEncryptor.decryptPacket(encryptedPacket);
 		Assert.assertEquals(list.size(), 1);
@@ -22,8 +22,8 @@ public class PacketTest {
 	
 	@Test
 	public void encryptTwoPackets_whenByteArraysGlued_thenListSizeShouldBeTwo() throws CipherException {
-		Packet p1 = new Packet((byte)2, 3245L, 5, 1, "Hello world");
-		Packet p2 = new Packet((byte)12, 10234L, 10, 2, "Hi there!");
+		Packet p1 = new Packet((byte)2, 3245L, 5, 1, "{\"key\":\"Hello world\"}");
+		Packet p2 = new Packet((byte)12, 10234L, 10, 2, "{\"key\":\"Hi there!\"}");
 		var packetBytes1 = PacketEncryptor.encryptPacket(p1);
 		var packetBytes2 = PacketEncryptor.encryptPacket(p2);
 		byte[] resArray = new byte[packetBytes1.length + packetBytes2.length];
@@ -37,7 +37,7 @@ public class PacketTest {
 	
 	@Test
 	public void encryptPacket_whenByteArrayChanged_thenPacketDropped() throws CipherException {
-		Packet p1 = new Packet((byte)2, 3245L, 5, 1, "Hello world");
+		Packet p1 = new Packet((byte)2, 3245L, 5, 1, "{\"key\":\"Hello world\"}");
 		var packetBytes = PacketEncryptor.encryptPacket(p1);
 		packetBytes[9] = 0;
 		List<Packet> list = PacketEncryptor.decryptPacket(packetBytes);
@@ -46,14 +46,14 @@ public class PacketTest {
 	
 	@Test
 	public void encryptPacket_whenPacketWLen_thenByteArrayLengthEqualToExpected() throws CipherException {
-		Packet p1 = new Packet((byte)2, 3245L, 5, 1, "Hello world");
+		Packet p1 = new Packet((byte)2, 3245L, 5, 1, "{\"key\":\"Hello world\"}");
 		var packetBytes = PacketEncryptor.encryptPacket(p1);
 		Assert.assertEquals(packetBytes.length, Packet.PACKET_CONST_LENGTH + p1.getWLen());
 	}
 	
 	@Test
 	public void encryptPacket_whenEncryptedMessageByteArray_thenPacketByteSubarrayEqualToEncryptedMessageByteArray() throws CipherException {
-		Message msg = new Message(5, 1, "Hello world");
+		Message msg = new Message(5, 1, "{\"key\":\"Hello world\"}");
 		Packet p1 = new Packet((byte)2, 3245L, msg);
 		var packetBytes = PacketEncryptor.encryptPacket(p1);
 		byte[] packetMsgSubArray = new byte[p1.getWLen()];

@@ -60,7 +60,7 @@ public class Packet {
 	
 	@Override
     public String toString() {
-        return "packet.Packet{" +
+        return "Packet{" +
                 "bSrc='" + this.bSrc + '\'' +
                 ", bPktId=" + this.bPktId +
                 ", wLen=" + this.wLen +
