@@ -1,0 +1,10 @@
+package utils;
+
+public enum Commands {
+    PRODUCT_GET_QUANTITY,
+    PRODUCT_TAKE_QUANTITY,
+    PRODUCT_ADD_QUANTITY,
+    PRODUCT_CREATE,
+    PRODUCT_SET_PRICE,
+    GROUP_CREATE
+}
