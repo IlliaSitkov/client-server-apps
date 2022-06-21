@@ -8,7 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class Utils {
-
+	
+	public static final int THREAD_NUMB = 2;
+	
     public static long generateId() {
         return (long)(System.currentTimeMillis()*Math.random()+Math.random()*Math.random()*100);
     }
