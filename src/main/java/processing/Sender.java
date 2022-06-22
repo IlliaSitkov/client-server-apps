@@ -15,7 +15,7 @@ public class Sender {
 	//fake implementation
 	public void sendPacket(byte[] packet) {
 		String strBytes = Base64.getEncoder().encodeToString(packet);
-		System.out.println(strBytes);
+		System.out.println("Sending message - " + strBytes);
 	}
 	
 }
