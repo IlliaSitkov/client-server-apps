@@ -22,6 +22,7 @@ import utils.Commands;
 import utils.JSONStrings;
 import utils.Utils;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -96,6 +97,43 @@ public class CommandsTest {
         Utils.sleep(1500);
 
         Assertions.assertEquals(1, groupService.getAllGroups().size());
+    }
+
+
+    @Test
+    public void createEqualGroupsVarious_whenManyThreads_thenOnlyOneCreated() throws InterruptedException {
+
+        int nThreads = 5;
+        int expectedNameLength = "My Group".length();
+
+        List<String> names = List.of("  MY   GrOuP   ", "my    GROUP   ", "  mY GROup    ");
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for (String name: names) {
+            executorService.execute(() -> {
+                try {
+                    String description = "Description";
+                    Message message = new Message(Commands.GROUP_CREATE.ordinal(), 123);
+                    message.putValue(JSONStrings.NAME,name);
+                    message.putValue(JSONStrings.DESCRIPTION,description);
+                    Packet p = new Packet((byte)12, 678L, message);
+                    receiver.receiveMessage(PacketEncryptor.encryptPacket(p));
+                } catch (RuntimeException e) {
+
+                } catch (CipherException e) {
+
+                }
+            });
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.DAYS);
+
+        Utils.sleep(1500);
+
+        List<Group> groups = groupService.getAllGroups();
+        Assertions.assertEquals(1, groups.size());
+        Assertions.assertEquals(expectedNameLength, groups.get(0).getName().length());
+
     }
 
 
@@ -201,6 +239,52 @@ public class CommandsTest {
         Utils.sleep(1000);
 
         Assertions.assertEquals(1, productRepository.getAll().size());
+    }
+
+
+
+    @Test
+    public void createEqualProductsVarious_whenManyThreads_thenOnlyOneCreated() throws InterruptedException {
+        Group g = groupService.createGroup("Group", "New Group");
+
+        int nThreads = 5;
+
+        String description = "Description";
+        String producer = "Producer";
+        int quantity = 123;
+        double price = 343;
+
+        int expectedNameLength = "My Group".length();
+
+        List<String> names = List.of("  MY   GrOuP   ", "my    GROUP   ", "  mY GROup    ");
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for (String name: names) {
+            executorService.execute(() -> {
+                try {
+                    Message message = new Message(Commands.PRODUCT_CREATE.ordinal(), 123);
+                    message.putValue(JSONStrings.NAME,name);
+                    message.putValue(JSONStrings.DESCRIPTION,description);
+                    message.putValue(JSONStrings.PRODUCER, producer);
+                    message.putValue(JSONStrings.QUANTITY, quantity);
+                    message.putValue(JSONStrings.PRICE, price);
+                    message.putValue(JSONStrings.GROUP_ID, g.getId());
+
+                    Packet p = new Packet((byte)12, 678L, message);
+                    receiver.receiveMessage(PacketEncryptor.encryptPacket(p));
+                } catch (RuntimeException | CipherException ignored) {
+
+                }
+            });
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
+
+        Utils.sleep(1000);
+
+        List<Product> products = productRepository.getAll();
+        Assertions.assertEquals(1, products.size());
+        Assertions.assertEquals(expectedNameLength, products.get(0).getName().length());
     }
 
 
