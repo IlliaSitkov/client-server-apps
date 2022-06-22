@@ -1,5 +1,6 @@
 package repository.product;
 
+import exceptions.ProductNotFoundException;
 import model.Product;
 import utils.Utils;
 
@@ -56,7 +57,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public synchronized Product getById(Long id) {
-        return products.stream().filter(p -> Objects.equals(p.getId(), id)).findFirst().orElseThrow();
+        return products.stream().filter(p -> Objects.equals(p.getId(), id)).findFirst().orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     @Override

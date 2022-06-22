@@ -1,5 +1,6 @@
 package service.product;
 
+import exceptions.InsufficientQuantityException;
 import exceptions.NameNotUniqueException;
 import model.Product;
 import repository.product.ProductRepository;
@@ -76,34 +77,22 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public synchronized boolean addProducts(Long productId, int quantityToAdd) {
-        try {
-            Product product = getProductById(productId);
-            Utils.validateNumber(quantityToAdd);
-            product.setQuantity(product.getQuantity() + quantityToAdd);
-            productRepository.update(product);
-            return true;
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            return false;
-        }
+    public synchronized void addProducts(Long productId, int quantityToAdd) {
+        Product product = getProductById(productId);
+        Utils.validateNumber(quantityToAdd);
+        product.setQuantity(product.getQuantity() + quantityToAdd);
+        productRepository.update(product);
     }
 
     @Override
-    public synchronized boolean takeProducts(Long productId, int quantityToRemove) {
-        try {
-            Product product = getProductById(productId);
-            Utils.validateNumber(quantityToRemove);
-            if (product.getQuantity() < quantityToRemove) {
-                return false;
-            }
-            product.setQuantity(product.getQuantity() - quantityToRemove);
-            productRepository.update(product);
-            return true;
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            return false;
+    public synchronized void takeProducts(Long productId, int quantityToRemove) {
+        Product product = getProductById(productId);
+        Utils.validateNumber(quantityToRemove);
+        if (product.getQuantity() < quantityToRemove) {
+            throw new InsufficientQuantityException(product.getQuantity(), quantityToRemove);
         }
+        product.setQuantity(product.getQuantity() - quantityToRemove);
+        productRepository.update(product);
     }
 
     @Override
@@ -117,17 +106,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public synchronized boolean setProductPrice(Long productId, double price) {
-        try {
-            Product product = getProductById(productId);
-            Utils.validateNumber(price);
-            product.setPrice(price);
-            productRepository.update(product);
-            return true;
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            return false;
-        }
+    public synchronized void setProductPrice(Long productId, double price) {
+        Product product = getProductById(productId);
+        Utils.validateNumber(price);
+        product.setPrice(price);
+        productRepository.update(product);
     }
 
     @Override
@@ -137,7 +120,7 @@ public class ProductServiceImpl implements ProductService {
 
     private void validateNameIsUnique(String name) {
         if (productRepository.existsWithName(name)) {
-            throw new NameNotUniqueException();
+            throw new NameNotUniqueException(name);
         }
     }
 

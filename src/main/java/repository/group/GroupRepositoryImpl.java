@@ -1,5 +1,6 @@
 package repository.group;
 
+import exceptions.GroupNotFoundException;
 import model.Group;
 import utils.Utils;
 
@@ -56,7 +57,7 @@ public class GroupRepositoryImpl implements GroupRepository {
 
     @Override
     public synchronized Group getById(Long id) {
-        return groups.stream().filter(g -> Objects.equals(g.getId(), id)).findFirst().orElseThrow();
+        return groups.stream().filter(g -> Objects.equals(g.getId(), id)).findFirst().orElseThrow(() -> new GroupNotFoundException(id));
     }
 
     @Override

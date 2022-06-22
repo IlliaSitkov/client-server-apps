@@ -14,15 +14,15 @@ public interface ProductService {
 
     Product getProductById(Long productId);
 
-    boolean addProducts(Long productId, int quantityToAdd);
+    void addProducts(Long productId, int quantityToAdd);
 
-    boolean takeProducts(Long productId, int quantityToRemove);
+    void takeProducts(Long productId, int quantityToRemove);
 
     List<Product> getAllProducts();
 
     int getProductQuantity(Long productId);
 
-    boolean setProductPrice(Long productId, double price);
+    void setProductPrice(Long productId, double price);
 
     void deleteAllProducts();
 

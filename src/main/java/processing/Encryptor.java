@@ -27,10 +27,10 @@ public class Encryptor extends BaseMultiThreadUnit {
 		this.execService.execute(() -> {
 			//temporary solution
 			Packet packet = new Packet(initial.getBSrc(), 
-							initial.getBPktId(), 
+							initial.getBPktId(),
 							initial.getBMsg().getCType(),
 							initial.getBMsg().getUserId(),
-							"OK");
+							"{\"result\": \"OK\"}");
 			try {
 				byte[] bytes = PacketEncryptor.encryptPacket(packet);
 				this.mediator.notifyPacketEncrypted(bytes);

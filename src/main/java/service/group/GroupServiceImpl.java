@@ -80,7 +80,7 @@ public class GroupServiceImpl implements GroupService{
 
     private void validateNameIsUnique(String name) {
         if (groupRepository.existsWithName(name)) {
-            throw new NameNotUniqueException();
+            throw new NameNotUniqueException(name);
         }
     }
 
