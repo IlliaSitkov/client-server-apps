@@ -9,10 +9,10 @@ import java.util.List;
 
 public class Utils {
 	
-	public static final int THREAD_NUMB = 2;
+	public static final int THREAD_NUMB = 3;
 
     public static final long TERMINATION_TIMEOUT_DAYS = 1;
-	
+
     public static long generateId() {
         return (long)(System.currentTimeMillis()*Math.random()+Math.random()*Math.random()*100);
     }
