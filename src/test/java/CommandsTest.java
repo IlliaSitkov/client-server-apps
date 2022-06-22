@@ -178,7 +178,6 @@ public class CommandsTest {
 
         ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
         for (int i = 0; i < times; i++) {
-            int finalI = i;
             executorService.execute(() -> {
                 try {
                     Message message = new Message(Commands.PRODUCT_CREATE.ordinal(), 123);
@@ -273,10 +272,84 @@ public class CommandsTest {
 
         Utils.sleep(1000);
 
-        Assertions.assertEquals(productService.getProductById(product.getId()).getPrice(), newPrice);
-
-
+        Assertions.assertEquals(newPrice,productService.getProductById(product.getId()).getPrice());
     }
+
+
+
+    @Test
+    public void setPrice_whenInorrectPriceAndManyThreads_thenOldPriceRemains() throws InterruptedException {
+
+        int times = 30;
+        int nThreads = 5;
+
+        double oldPrice = 456.7;
+        double incorrectPrice = -234.5;
+
+        Group g = groupService.createGroup("Group", "New Group");
+        Product product = productService.createProduct("Name", "desc", "prod", 233, oldPrice, g.getId());
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for (int i = 0; i < times; i++) {
+            executorService.execute(() -> {
+                Message message = new Message(Commands.PRODUCT_SET_PRICE.ordinal(), 123);
+                message.putValue(JSONStrings.PRODUCT_ID, product.getId());
+                message.putValue(JSONStrings.PRICE, incorrectPrice);
+
+                Packet p = new Packet((byte) 12, 678L, message);
+                try {
+                    receiver.receiveMessage(PacketEncryptor.encryptPacket(p));
+                } catch (CipherException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
+
+        Utils.sleep(1000);
+
+        Assertions.assertEquals(oldPrice,productService.getProductById(product.getId()).getPrice());
+    }
+
+
+
+    @Test
+    public void setPrice_whenRandomCorrectPriceAndManyThreads_thenOldPriceNotPresent() throws CipherException, InterruptedException {
+
+        int times = 30;
+        int nThreads = 5;
+
+        double oldPrice = 3.4;
+
+        Group g = groupService.createGroup("Group", "New Group");
+        Product product = productService.createProduct("Name", "desc", "prod", 233, oldPrice, g.getId());
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for (int i = 0; i < times; i++) {
+            int finalI = i;
+            executorService.execute(() -> {
+                Message message = new Message(Commands.PRODUCT_SET_PRICE.ordinal(), 123);
+                message.putValue(JSONStrings.PRODUCT_ID, product.getId());
+                message.putValue(JSONStrings.PRICE, finalI *100+1);
+
+                Packet p = new Packet((byte) 12, 678L, message);
+                try {
+                    receiver.receiveMessage(PacketEncryptor.encryptPacket(p));
+                } catch (CipherException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
+
+        Utils.sleep(1000);
+
+        Assertions.assertNotEquals(oldPrice,productService.getProductById(product.getId()).getPrice());
+    }
+
+
 
 
 
