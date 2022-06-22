@@ -278,7 +278,7 @@ public class CommandsTest {
 
 
     @Test
-    public void setPrice_whenInorrectPriceAndManyThreads_thenOldPriceRemains() throws InterruptedException {
+    public void setPrice_whenIncorrectPriceAndManyThreads_thenOldPriceRemains() throws InterruptedException {
 
         int times = 30;
         int nThreads = 5;
