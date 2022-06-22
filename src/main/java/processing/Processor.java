@@ -22,15 +22,15 @@ public class Processor extends BaseMultiThreadUnit {
 	
 	private GroupService groupService;
 	
-	public static Processor getInstance() {
+	public static Processor getInstance(Mediator mediator) {
 		if(instance == null)
-			instance = new Processor();
+			instance = new Processor(mediator);
 		return instance;
 	}
 	
-	private Processor() {
+	private Processor(Mediator mediator) {
 		super();
-		this.mediator = Mediator.getInstance();
+		this.mediator = mediator;
 		this.productService = ProductServiceImpl.getInstance();
 		this.groupService = GroupServiceImpl.getInstance();
 	}

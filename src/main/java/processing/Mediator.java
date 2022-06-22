@@ -23,9 +23,9 @@ public class Mediator {
 	}
 	
 	private Mediator() {
-		this.decryptor = Decryptor.getInstance();
-		this.encryptor = Encryptor.getInstance();
-		this.processor = Processor.getInstance();
+		this.decryptor = Decryptor.getInstance(this);
+		this.encryptor = Encryptor.getInstance(this);
+		this.processor = Processor.getInstance(this);
 		this.sender = Sender.getInstance();
 	}
 	
