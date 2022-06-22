@@ -12,15 +12,15 @@ public class Encryptor extends BaseMultiThreadUnit {
 	
 	private Mediator mediator;
 	
-	public static Encryptor getInstance() {
+	public static Encryptor getInstance(Mediator mediator) {
 		if(instance == null)
-			instance = new Encryptor();
+			instance = new Encryptor(mediator);
 		return instance;
 	}
 	
-	private Encryptor() {
+	private Encryptor(Mediator mediator) {
 		super();
-		this.mediator = Mediator.getInstance();
+		this.mediator = mediator;
 	}
 	
 	public void addEncryptionTask(Packet initial, Optional<Integer> processingResult) {

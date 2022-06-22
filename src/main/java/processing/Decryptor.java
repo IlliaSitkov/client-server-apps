@@ -10,15 +10,15 @@ public class Decryptor extends BaseMultiThreadUnit {
 	
 	private Mediator mediator;
 	
-	public static Decryptor getInstance() {
+	public static Decryptor getInstance(Mediator mediator) {
 		if(instance == null)
-			instance = new Decryptor();
+			instance = new Decryptor(mediator);
 		return instance;
 	}
 	
-	private Decryptor() {
+	private Decryptor(Mediator mediator) {
 		super();
-		this.mediator = Mediator.getInstance();
+		this.mediator = mediator;
 	}
 	
 	public void addDecryptionTask(byte[] encryptedMessage) {
