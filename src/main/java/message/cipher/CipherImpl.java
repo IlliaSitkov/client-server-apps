@@ -48,7 +48,7 @@ public class CipherImpl implements Cipher {
         }
     }
 
-    public final byte[] encrypt(final String string) throws CipherException {
+    public synchronized final byte[] encrypt(final String string) throws CipherException {
         initMode(javax.crypto.Cipher.ENCRYPT_MODE);
         try {
             return cipher.doFinal(string.getBytes());
@@ -57,7 +57,7 @@ public class CipherImpl implements Cipher {
         }
     }
 
-    public final byte[] decrypt(final byte[] bytes) throws CipherException {
+    public synchronized final byte[] decrypt(final byte[] bytes) throws CipherException {
         initMode(javax.crypto.Cipher.DECRYPT_MODE);
         try{
             return cipher.doFinal(bytes);

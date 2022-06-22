@@ -45,6 +45,7 @@ public class ProductServiceTest {
             executorService.execute(() -> productService.addProducts(p.getId(),addQ)
             );
         }
+        executorService.shutdown();
         executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(initial+times*addQ,productService.getProductQuantity(p.getId()));
     }
@@ -62,8 +63,8 @@ public class ProductServiceTest {
         for (int i = 0; i < times; i++) {
             executorService.execute(() -> productService.takeProducts(p.getId(),takeQ));
         }
+        executorService.shutdown();
         executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
-
         Assertions.assertEquals(initial-times*takeQ,productService.getProductQuantity(p.getId()));
     }
 
@@ -88,6 +89,7 @@ public class ProductServiceTest {
                 }
             });
         }
+        executorService.shutdown();
         executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
 
         Assertions.assertEquals(initial,productService.getProductQuantity(p.getId()));
@@ -130,6 +132,7 @@ public class ProductServiceTest {
                 }
             });
         }
+        executorService.shutdown();
         executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(1, productService.getAllProducts().size());
     }
@@ -153,6 +156,7 @@ public class ProductServiceTest {
                 }
             });
         }
+        executorService.shutdown();
         executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(2, productService.getAllProducts().size());
     }

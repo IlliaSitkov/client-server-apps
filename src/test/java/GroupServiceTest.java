@@ -37,7 +37,7 @@ public class GroupServiceTest {
 
 
     @Test
-    public void createEqualGroups_whenFewThreads_thenOnlyOneCreated() {
+    public void createEqualGroups_whenFewThreads_thenOnlyOneCreated() throws InterruptedException {
 
         int times = 20;
         int nThreads = 5;
@@ -53,11 +53,13 @@ public class GroupServiceTest {
             });
         }
         executorService.shutdown();
+        executorService.awaitTermination(1,TimeUnit.DAYS);
+
         Assertions.assertEquals(1, groupService.getAllGroups().size());
     }
 
     @Test
-    public void updateGroupCreateEqualGroups_whenFewThreads_thenOnlyTwoExist() {
+    public void updateGroupCreateEqualGroups_whenFewThreads_thenOnlyTwoExist() throws InterruptedException {
         Group g = groupService.createGroup("Group", "New Group");
 
         int times = 20;
@@ -75,6 +77,8 @@ public class GroupServiceTest {
             });
         }
         executorService.shutdown();
+        executorService.awaitTermination(1,TimeUnit.DAYS);
+
         Assertions.assertEquals(2, groupService.getAllGroups().size());
     }
 
@@ -86,7 +90,10 @@ public class GroupServiceTest {
         for (int i = 0; i < 1000; i++) {
             executorService.execute(() -> repository.save(new Group("Group", "New Group")));
         }
+
+        executorService.shutdown();
         executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
+
         Assertions.assertEquals(1000, groupService.getAllGroups().size());
     }
 
