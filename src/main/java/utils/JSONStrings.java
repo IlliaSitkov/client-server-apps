@@ -20,5 +20,7 @@ public class JSONStrings {
 	
 	public static final String GROUP_ID = "groupId";
 	
+	public static final String RESULT = "result";
+	
 	
 }

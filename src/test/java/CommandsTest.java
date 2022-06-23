@@ -2,6 +2,9 @@ import exceptions.CipherException;
 import message.Message;
 import model.Group;
 import model.Product;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,9 @@ import utils.Commands;
 import utils.JSONStrings;
 import utils.Utils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +39,7 @@ public class CommandsTest {
     //Встановити ціну на конкретний товар
 
     private final Receiver receiver = ReceiverFakeImpl.getInstance();
+    
     private final GroupService groupService = GroupServiceImpl.getInstance();
 
     private final GroupRepository groupRepository = GroupRepositoryImpl.getInstance();
@@ -41,7 +48,7 @@ public class CommandsTest {
 
     private final ProductRepository productRepository = ProductRepositoryImpl.getInstance();
 
-    private final Mediator mediator = Mediator.getInstance();
+   // private final Mediator mediator = Mediator.getInstance();
 
 
     @AfterEach
@@ -277,10 +284,185 @@ public class CommandsTest {
 
 
     }
-
-
-
-
-
+    
+//--------------------------------------------------------------------------------------------
+// Взнати кількість товару на складі
+// Списати певну кількість товару
+// Зарахувати певну кількість товару  
+   
+    
+    @Test
+    public void getProductQuantity_whenOneThread_thenQuantityCorrect() throws CipherException {
+    	ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    	System.setOut(new PrintStream(outContent));
+    	
+    	int quantity = 123;
+    	Group g = groupService.createGroup("Group", "New Group");
+    	Product p1 = this.productService.createProduct("product1", "descr1", "producer1", quantity, 100.5, g.getId());
+    	Message message = new Message(Commands.PRODUCT_GET_QUANTITY.ordinal(), 123);
+    	message.putValue(JSONStrings.PRODUCT_ID, p1.getId());
+    	Packet packet = new Packet((byte)20, 555L, message);
+    	this.receiver.receiveMessage(PacketEncryptor.encryptPacket(packet));
+    	Utils.sleep(500);
+    	
+    	String raw = outContent.toString();
+    	String stringPacket = raw.substring(18, raw.length() - 2);
+    	byte[] arr = Base64.getDecoder().decode(stringPacket);
+    	Packet decrypted = PacketEncryptor.decryptPacket(arr).get(0);
+    	System.setOut(System.out);
+    	Assertions.assertEquals(quantity, decrypted.getBMsg().getMessageJSON().getInt(JSONStrings.RESULT));
+    }
+    
+    @Test
+    public void getProductQuantity_whenAnotherThreadAddsQuantity_thenQuantityCorrect() throws InterruptedException, CipherException {
+    	ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    	System.setOut(new PrintStream(outContent));
+    	
+    	int quantity = 100;
+    	Group g = groupService.createGroup("Group", "New Group");
+    	Product p1 = this.productService.createProduct("product1", "descr1", "producer1", quantity, 100.5, g.getId());
+    	
+    	Runnable run1 = () -> {
+    		Message message = new Message(Commands.PRODUCT_ADD_QUANTITY.ordinal(), 222);
+    		message.putValue(JSONStrings.PRODUCT_ID, p1.getId());
+    		message.putValue(JSONStrings.QUANTITY_TO_ADD, quantity);
+    		Packet pack = new Packet((byte)22, 555L, message);
+    		try {
+				this.receiver.receiveMessage(PacketEncryptor.encryptPacket(pack));
+			} catch (CipherException e) {
+				e.printStackTrace();
+			}
+    	};
+    	
+    	Runnable run2 = () -> {
+    		Utils.sleep(5);
+    		Message message = new Message(Commands.PRODUCT_GET_QUANTITY.ordinal(), 123);
+        	message.putValue(JSONStrings.PRODUCT_ID, p1.getId());
+        	Packet pack = new Packet((byte)20, 555L, message);
+        	try {
+				this.receiver.receiveMessage(PacketEncryptor.encryptPacket(pack));
+			} catch (CipherException e) {
+				e.printStackTrace();
+			}
+    	};
+    	
+    	ExecutorService exec = Executors.newFixedThreadPool(2);
+    	
+    	exec.execute(run1);
+    	exec.execute(run2);
+    	
+    	exec.shutdown();
+    	exec.awaitTermination(500, TimeUnit.MILLISECONDS);
+    	
+    	Utils.sleep(100);
+    	
+    	String raw = outContent.toString();
+    	String[] arr = raw.split("\r\n");
+    	String strPacket1 = arr[0].substring(18);
+    	String strPacket2 = arr[1].substring(18);
+    	Packet pack1 = PacketEncryptor.decryptPacket(Base64.getDecoder().decode(strPacket1)).get(0);
+    	Packet pack2 = PacketEncryptor.decryptPacket(Base64.getDecoder().decode(strPacket2)).get(0);
+    	Packet packRes = (pack1.getBMsg().getMessage().contains("OK")) ? pack2 : pack1;
+    	System.setOut(System.out);
+    	Assertions.assertEquals(2 * quantity, packRes.getBMsg().getMessageJSON().getInt(JSONStrings.RESULT));
+    }
+    
+    @Test
+    public void takeProductQuantity_whenManyThreads_thenResultingQuantityIsCorrect() throws InterruptedException {
+    	int initialQuantity = 1200;
+    	
+    	Group g = groupService.createGroup("Group", "New Group");
+    	Product p1 = this.productService.createProduct("product1", "descr1", "producer1", initialQuantity, 100.5, g.getId());
+    	int threadNumber = 5;
+    	int quantityToRemove = 200;
+    	ExecutorService exec = Executors.newFixedThreadPool(threadNumber);
+    	for(int i = 0; i < threadNumber; i++) {
+    		exec.execute(() -> {
+    			Message message = new Message(Commands.PRODUCT_TAKE_QUANTITY.ordinal(), 123);
+            	message.putValue(JSONStrings.PRODUCT_ID, p1.getId());
+            	message.putValue(JSONStrings.QUANTITY_TO_REMOVE, quantityToRemove);
+            	Packet pack = new Packet((byte)20, 555L, message);
+            	try {
+					this.receiver.receiveMessage(PacketEncryptor.encryptPacket(pack));
+				} catch (CipherException e) {
+					e.printStackTrace();
+				}
+    		});
+    	}
+    	
+    	exec.shutdown();
+    	exec.awaitTermination(500, TimeUnit.MILLISECONDS);
+    	Utils.sleep(100);
+    	int resultingQuantity = this.productRepository.getById(p1.getId()).getQuantity();
+    	Assertions.assertEquals(initialQuantity - quantityToRemove * threadNumber, resultingQuantity);
+    }
+    
+    @Test
+    public void addProductQuantity_whenManyThreads_thenResultingQuantityIsCorrect() throws InterruptedException {
+    	int initialQuantity = 0;
+    	Group g = groupService.createGroup("Group", "New Group");
+    	Product p1 = this.productService.createProduct("product1", "descr1", "producer1", initialQuantity, 100.5, g.getId());
+    	int threadNumber = 5;
+    	int quantityToAdd = 200;
+    	ExecutorService exec = Executors.newFixedThreadPool(threadNumber);
+    	for(int i = 0; i < threadNumber; i++) {
+    		exec.execute(() -> {
+    			Message message = new Message(Commands.PRODUCT_ADD_QUANTITY.ordinal(), 123);
+            	message.putValue(JSONStrings.PRODUCT_ID, p1.getId());
+            	message.putValue(JSONStrings.QUANTITY_TO_ADD, quantityToAdd);
+            	Packet pack = new Packet((byte)20, 555L, message);
+            	try {
+					this.receiver.receiveMessage(PacketEncryptor.encryptPacket(pack));
+				} catch (CipherException e) {
+					e.printStackTrace();
+				}
+    		});
+    	}
+    	exec.shutdown();
+    	exec.awaitTermination(500, TimeUnit.MILLISECONDS);
+    	Utils.sleep(100);
+    	int resultingQuantity = this.productRepository.getById(p1.getId()).getQuantity();
+    	Assertions.assertEquals(initialQuantity + quantityToAdd * threadNumber, resultingQuantity);
+    }
+    
+    @Test
+    public void addAndTakeProductQunatity_whenTwoConcurrentThreads_thenResultingQuantityUnchanged() throws InterruptedException {
+    	int initialQuantity = 100;
+    	int quantityDiff = 50;
+    	Group g = groupService.createGroup("Group", "New Group");
+    	Product p1 = this.productService.createProduct("product1", "descr1", "producer1", initialQuantity, 100.5, g.getId());
+    	Runnable run1 = () -> {
+    		Message message = new Message(Commands.PRODUCT_ADD_QUANTITY.ordinal(), 222);
+    		message.putValue(JSONStrings.PRODUCT_ID, p1.getId());
+    		message.putValue(JSONStrings.QUANTITY_TO_ADD, quantityDiff);
+    		Packet pack = new Packet((byte)22, 555L, message);
+    		try {
+				this.receiver.receiveMessage(PacketEncryptor.encryptPacket(pack));
+			} catch (CipherException e) {
+				e.printStackTrace();
+			}
+    	};
+    	
+    	Runnable run2 = () -> {
+    		Message message = new Message(Commands.PRODUCT_TAKE_QUANTITY.ordinal(), 222);
+    		message.putValue(JSONStrings.PRODUCT_ID, p1.getId());
+    		message.putValue(JSONStrings.QUANTITY_TO_REMOVE, quantityDiff);
+    		Packet pack = new Packet((byte)22, 555L, message);
+    		try {
+				this.receiver.receiveMessage(PacketEncryptor.encryptPacket(pack));
+			} catch (CipherException e) {
+				e.printStackTrace();
+			}
+    	};
+    	ExecutorService exec = Executors.newFixedThreadPool(2);
+    	exec.execute(run1);
+    	exec.execute(run2);
+    	exec.shutdown();
+    	exec.awaitTermination(500, TimeUnit.MILLISECONDS);
+    	Utils.sleep(100);
+    	Assertions.assertEquals(initialQuantity, this.productRepository.getById(p1.getId()).getQuantity());
+    }
+    
+    
 
 }

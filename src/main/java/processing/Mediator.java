@@ -37,9 +37,9 @@ public class Mediator {
 	public void notifyPacketDecrypted(Packet packet) {
 		this.processor.addProcessingTask(packet);
 	}
-	
-	public void notifyPacketProcessed(Packet initial, Optional<Integer> processingResult) {
-		this.encryptor.addEncryptionTask(initial, processingResult);
+		
+	public void notifyPacketProcessed(Packet initial, boolean success, Optional<Object> result, Optional<String> errorMessage) {
+		this.encryptor.addEncryptionTask(initial, success, result, errorMessage);
 	}
 	
 	public void notifyPacketEncrypted(byte[] encryptedPacket) {

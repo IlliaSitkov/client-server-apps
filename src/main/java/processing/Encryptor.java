@@ -5,6 +5,7 @@ import java.util.Optional;
 import exceptions.CipherException;
 import packet.Packet;
 import packet.PacketEncryptor;
+import utils.Commands;
 
 public class Encryptor extends BaseMultiThreadUnit {
 
@@ -23,14 +24,16 @@ public class Encryptor extends BaseMultiThreadUnit {
 		this.mediator = mediator;
 	}
 	
-	public void addEncryptionTask(Packet initial, Optional<Integer> processingResult) {
+	//public void addEncryptionTask(Packet initial, Optional<Integer> processingResult) {
+	public void addEncryptionTask(Packet initial, boolean success, Optional<Object> result, Optional<String> errorMessage) {
+		boolean getQuantityQuery = initial.getBMsg().getCType() == Commands.PRODUCT_GET_QUANTITY.ordinal();
 		this.execService.execute(() -> {
 			//temporary solution
 			Packet packet = new Packet(initial.getBSrc(), 
 							initial.getBPktId(),
 							initial.getBMsg().getCType(),
 							initial.getBMsg().getUserId(),
-							"{\"result\": \"OK\"}");
+							"{\"result\": " + (getQuantityQuery ? ((Integer)result.get()) : "\"OK\"") + "}");
 			try {
 				byte[] bytes = PacketEncryptor.encryptPacket(packet);
 				this.mediator.notifyPacketEncrypted(bytes);
