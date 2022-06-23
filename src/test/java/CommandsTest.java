@@ -3,14 +3,11 @@ import message.Message;
 import model.Group;
 import model.Product;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import packet.Packet;
 import packet.PacketEncryptor;
-import processing.Mediator;
 import processing.Receiver;
 import processing.ReceiverFakeImpl;
 import repository.group.GroupRepository;
@@ -25,9 +22,11 @@ import utils.Commands;
 import utils.JSONStrings;
 import utils.Utils;
 
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -47,8 +46,6 @@ public class CommandsTest {
     private final ProductService productService = ProductServiceImpl.getInstance();
 
     private final ProductRepository productRepository = ProductRepositoryImpl.getInstance();
-
-   // private final Mediator mediator = Mediator.getInstance();
 
 
     @AfterEach
@@ -103,6 +100,43 @@ public class CommandsTest {
         Utils.sleep(1500);
 
         Assertions.assertEquals(1, groupService.getAllGroups().size());
+    }
+
+
+    @Test
+    public void createEqualGroupsVarious_whenManyThreads_thenOnlyOneCreated() throws InterruptedException {
+
+        int nThreads = 5;
+        int expectedNameLength = "My Group".length();
+
+        List<String> names = List.of("  MY   GrOuP   ", "my    GROUP   ", "  mY GROup    ");
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for (String name: names) {
+            executorService.execute(() -> {
+                try {
+                    String description = "Description";
+                    Message message = new Message(Commands.GROUP_CREATE.ordinal(), 123);
+                    message.putValue(JSONStrings.NAME,name);
+                    message.putValue(JSONStrings.DESCRIPTION,description);
+                    Packet p = new Packet((byte)12, 678L, message);
+                    receiver.receiveMessage(PacketEncryptor.encryptPacket(p));
+                } catch (RuntimeException e) {
+
+                } catch (CipherException e) {
+
+                }
+            });
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.DAYS);
+
+        Utils.sleep(1500);
+
+        List<Group> groups = groupService.getAllGroups();
+        Assertions.assertEquals(1, groups.size());
+        Assertions.assertEquals(expectedNameLength, groups.get(0).getName().length());
+
     }
 
 
@@ -185,7 +219,6 @@ public class CommandsTest {
 
         ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
         for (int i = 0; i < times; i++) {
-            int finalI = i;
             executorService.execute(() -> {
                 try {
                     Message message = new Message(Commands.PRODUCT_CREATE.ordinal(), 123);
@@ -209,6 +242,52 @@ public class CommandsTest {
         Utils.sleep(1000);
 
         Assertions.assertEquals(1, productRepository.getAll().size());
+    }
+
+
+
+    @Test
+    public void createEqualProductsVarious_whenManyThreads_thenOnlyOneCreated() throws InterruptedException {
+        Group g = groupService.createGroup("Group", "New Group");
+
+        int nThreads = 5;
+
+        String description = "Description";
+        String producer = "Producer";
+        int quantity = 123;
+        double price = 343;
+
+        int expectedNameLength = "My Group".length();
+
+        List<String> names = List.of("  MY   GrOuP   ", "my    GROUP   ", "  mY GROup    ");
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for (String name: names) {
+            executorService.execute(() -> {
+                try {
+                    Message message = new Message(Commands.PRODUCT_CREATE.ordinal(), 123);
+                    message.putValue(JSONStrings.NAME,name);
+                    message.putValue(JSONStrings.DESCRIPTION,description);
+                    message.putValue(JSONStrings.PRODUCER, producer);
+                    message.putValue(JSONStrings.QUANTITY, quantity);
+                    message.putValue(JSONStrings.PRICE, price);
+                    message.putValue(JSONStrings.GROUP_ID, g.getId());
+
+                    Packet p = new Packet((byte)12, 678L, message);
+                    receiver.receiveMessage(PacketEncryptor.encryptPacket(p));
+                } catch (RuntimeException | CipherException ignored) {
+
+                }
+            });
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
+
+        Utils.sleep(1000);
+
+        List<Product> products = productRepository.getAll();
+        Assertions.assertEquals(1, products.size());
+        Assertions.assertEquals(expectedNameLength, products.get(0).getName().length());
     }
 
 
@@ -280,10 +359,79 @@ public class CommandsTest {
 
         Utils.sleep(1000);
 
-        Assertions.assertEquals(productService.getProductById(product.getId()).getPrice(), newPrice);
-
-
+        Assertions.assertEquals(newPrice,productService.getProductById(product.getId()).getPrice());
     }
+
+    @Test
+    public void setPrice_whenIncorrectPriceAndManyThreads_thenOldPriceRemains() throws InterruptedException {
+
+        int times = 30;
+        int nThreads = 5;
+
+        double oldPrice = 456.7;
+        double incorrectPrice = -234.5;
+
+        Group g = groupService.createGroup("Group", "New Group");
+        Product product = productService.createProduct("Name", "desc", "prod", 233, oldPrice, g.getId());
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for (int i = 0; i < times; i++) {
+            executorService.execute(() -> {
+                Message message = new Message(Commands.PRODUCT_SET_PRICE.ordinal(), 123);
+                message.putValue(JSONStrings.PRODUCT_ID, product.getId());
+                message.putValue(JSONStrings.PRICE, incorrectPrice);
+
+                Packet p = new Packet((byte) 12, 678L, message);
+                try {
+                    receiver.receiveMessage(PacketEncryptor.encryptPacket(p));
+                } catch (CipherException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
+
+        Utils.sleep(1000);
+
+        Assertions.assertEquals(oldPrice,productService.getProductById(product.getId()).getPrice());
+    }
+    
+    @Test
+    public void setPrice_whenRandomCorrectPriceAndManyThreads_thenOldPriceNotPresent() throws CipherException, InterruptedException {
+
+        int times = 30;
+        int nThreads = 5;
+
+        double oldPrice = 3.4;
+
+        Group g = groupService.createGroup("Group", "New Group");
+        Product product = productService.createProduct("Name", "desc", "prod", 233, oldPrice, g.getId());
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for (int i = 0; i < times; i++) {
+            int finalI = i;
+            executorService.execute(() -> {
+                Message message = new Message(Commands.PRODUCT_SET_PRICE.ordinal(), 123);
+                message.putValue(JSONStrings.PRODUCT_ID, product.getId());
+                message.putValue(JSONStrings.PRICE, finalI *100+1);
+
+                Packet p = new Packet((byte) 12, 678L, message);
+                try {
+                    receiver.receiveMessage(PacketEncryptor.encryptPacket(p));
+                } catch (CipherException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
+
+        Utils.sleep(1000);
+
+        Assertions.assertNotEquals(oldPrice,productService.getProductById(product.getId()).getPrice());
+    }
+    
     
 //--------------------------------------------------------------------------------------------
 // Взнати кількість товару на складі
@@ -463,6 +611,35 @@ public class CommandsTest {
     	Assertions.assertEquals(initialQuantity, this.productRepository.getById(p1.getId()).getQuantity());
     }
     
+    @Test
+    public void takeProductQuantity_whenManyThreads_thenQuantityIsNotNegative() throws InterruptedException {
+    	int initialQuantity = 300;
+    	int threadNumber = 5;
+    	int quantityDiff = 100;
+    	Group g = groupService.createGroup("Group", "New Group");
+    	Product p1 = this.productService.createProduct("product1", "descr1", "producer1", initialQuantity, 100.5, g.getId());
+    	ExecutorService exec = Executors.newFixedThreadPool(threadNumber);
+    	for(int i = 0; i < threadNumber; i++) {
+    		exec.execute(() -> {
+    			Message message = new Message(Commands.PRODUCT_TAKE_QUANTITY.ordinal(), 123);
+            	message.putValue(JSONStrings.PRODUCT_ID, p1.getId());
+            	message.putValue(JSONStrings.QUANTITY_TO_REMOVE, quantityDiff);
+            	Packet pack = new Packet((byte)20, 555L, message);
+            	try {
+					this.receiver.receiveMessage(PacketEncryptor.encryptPacket(pack));
+				} catch (CipherException e) {
+					e.printStackTrace();
+				}
+    		});
+    	}
+    	
+    	exec.shutdown();
+    	exec.awaitTermination(500, TimeUnit.MILLISECONDS);
+    	Utils.sleep(100);
+    	Assertions.assertEquals(0, this.productRepository.getById(p1.getId()).getQuantity());
+    }
     
+    
+   
 
 }

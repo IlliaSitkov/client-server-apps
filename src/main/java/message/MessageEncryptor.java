@@ -15,7 +15,6 @@ public class MessageEncryptor {
 
     public static byte[] encryptMessage(Message message) throws CipherException {
         byte[] encryptedMessageTextBytes = encryptMessageText(message.getMessage());
-
         ByteBuffer buffer = ByteBuffer.allocate(encryptedMessageTextBytes.length+Message.HEADER_LENGTH);
         buffer.order(ByteOrder.BIG_ENDIAN);
 
