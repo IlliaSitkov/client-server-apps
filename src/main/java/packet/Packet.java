@@ -17,6 +17,7 @@ import utils.CRC16Calculator;
 @EqualsAndHashCode
 public class Packet {
 
+	public static final int PACKET_MAX_LENGTH = 1024;
 	public static final int PACKET_CONST_LENGTH = Long.BYTES +
 													Integer.BYTES +
 													Short.BYTES +

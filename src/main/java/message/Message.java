@@ -26,8 +26,8 @@ public class Message {
         messageJSON.put(key, value);
     }
 
-    public void getValue(String key) {
-        messageJSON.get(key);
+    public Object getValue(String key) {
+        return messageJSON.get(key);
     }
 
     public String getMessage() {
