@@ -3,7 +3,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import repository.group.GroupRepository;
-import repository.group.GroupRepositoryImpl;
+import repository.group.GroupRepositoryFakeImpl;
 import service.group.GroupService;
 import service.group.GroupServiceImpl;
 
@@ -85,7 +85,7 @@ public class GroupServiceTest {
 
     @Test
     public void createGroups_whenManyThreads_thenAllSaved() throws InterruptedException {
-        GroupRepository repository = GroupRepositoryImpl.getInstance();
+        GroupRepository repository = GroupRepositoryFakeImpl.getInstance();
         ExecutorService executorService = Executors.newFixedThreadPool(5);
         for (int i = 0; i < 1000; i++) {
             executorService.execute(() -> repository.save(new Group("Group", "New Group")));

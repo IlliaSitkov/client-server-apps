@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import packet.Packet;
+import processing.Mediator;
 import server.udp.StoreClientUDP;
 import server.udp.StoreServerUDP;
 import utils.Utils;
@@ -17,13 +18,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class UDPTest {
 
-    private static StoreServerUDP server;
+    private static Mediator mediator;
 
 
     @BeforeAll
     public static void startServer() throws IOException {
-        server = new StoreServerUDP();
-        server.receive();
+        mediator = Mediator.getInstance();
+        mediator.startServer();
     }
 
 
@@ -106,7 +107,7 @@ public class UDPTest {
 
     @AfterAll
     public static void stopServer() throws InterruptedException {
-        server.stop();
+        mediator.terminateAll();
     }
 
 

@@ -7,7 +7,9 @@ import exceptions.ServerAlreadyStoppedException;
 import message.Message;
 import packet.Packet;
 import packet.PacketEncryptor;
+import processing.Mediator;
 import server.StoreServer;
+import utils.Utils;
 
 import java.io.IOException;
 import java.net.*;
@@ -15,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +35,8 @@ public class StoreServerUDP implements StoreServer {
 
     private final Lock lock = new ReentrantLock(true);
 
+    private final ConcurrentHashMap<Long, DatagramPacket> addressMap = new ConcurrentHashMap<>();
+
     static {
         try {
             DEFAULT_SERVER_ADDRESS = InetAddress.getByName("localhost");
@@ -45,14 +50,17 @@ public class StoreServerUDP implements StoreServer {
 
     private volatile boolean isRunning = false;
 
+    private final Mediator mediator;
 
-    public StoreServerUDP(InetAddress address, int port) throws IOException {
+
+    public StoreServerUDP(Mediator mediator, InetAddress address, int port) throws IOException {
         this.datagramSocket = new DatagramSocket(port, address);
         datagramSocket.setSoTimeout(RECEIVE_TIMEOUT);
+        this.mediator = mediator;
     }
 
-    public StoreServerUDP() throws IOException {
-        this(DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
+    public StoreServerUDP(Mediator mediator) throws IOException {
+        this(mediator, DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
     }
 
     public void stop() throws InterruptedException {
@@ -103,19 +111,19 @@ public class StoreServerUDP implements StoreServer {
 
     private Runnable getDatagramRunnable(DatagramPacket datagramPacket) {
         return () -> {
-            System.out.println("SERVER RECEIVED DG: "+datagramPacket+" | "+datagramPacket.getPort()+", "+Arrays.toString(datagramPacket.getData()));
-            try {
-                Packet packet = receive(datagramPacket.getData());// use mediator and its decryptor instead
-
-                // somehow process the packet and get the response packet
-                // process(packet)
-                // response = ...
-
-                Packet res = new Packet(packet.getBSrc(), packet.getBPktId(), new Message(0, 0, "{\"result\":\"OK\"}"));
-                send(PacketEncryptor.encryptPacket(res), datagramPacket.getAddress(), datagramPacket.getPort());
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+            byte[] data = datagramPacket.getData();
+            long packetId = Utils.getPacketId(data);
+            synchronized (receivedPackets) {
+                if (receivedPackets.contains(packetId)) {
+                    System.out.println("Server rejected: " + Arrays.toString(data));
+                    throw new PacketDuplicatedException(packetId);
+                }
+                receivedPackets.add(packetId);
             }
+            System.out.println("Server received: "+Arrays.toString(data));
+
+            addressMap.put(packetId, datagramPacket);
+            mediator.receiveMessage(data);
         };
     }
 
@@ -154,6 +162,17 @@ public class StoreServerUDP implements StoreServer {
         }
     }
 
+    @Override
+    public synchronized void send(byte[] bytes) {
+        long packetId = Utils.getPacketId(bytes);
+        DatagramPacket datagramPacket = addressMap.get(packetId);
+        send(bytes, datagramPacket.getAddress(), datagramPacket.getPort());
+        addressMap.remove(packetId, datagramPacket);
 
+    }
+
+    //https://wickesit.atlassian.net/jira/software/c/projects/MSV/boards/192?selectedIssue=MSV-2468&quickFilter=428
+    //Roman Yakymchuk11:44
+    //https://wickesit.atlassian.net/
 
 }

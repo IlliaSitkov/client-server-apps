@@ -12,4 +12,7 @@ public interface StoreServer {
     void send(byte[] bytes, InetAddress inetAddress, int port);
 
 
+    void send(byte[] bytes);
+
+
 }

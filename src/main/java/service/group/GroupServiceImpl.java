@@ -3,9 +3,9 @@ package service.group;
 import exceptions.NameNotUniqueException;
 import model.Group;
 import repository.group.GroupRepository;
-import repository.group.GroupRepositoryImpl;
+import repository.group.GroupRepositoryFakeImpl;
 import repository.product.ProductRepository;
-import repository.product.ProductRepositoryImpl;
+import repository.product.ProductRepositoryFakeImpl;
 import utils.Utils;
 
 import java.util.List;
@@ -19,8 +19,8 @@ public class GroupServiceImpl implements GroupService{
     private static volatile GroupServiceImpl groupService;
 
     private GroupServiceImpl() {
-        this.groupRepository = GroupRepositoryImpl.getInstance();
-        this.productRepository = ProductRepositoryImpl.getInstance();
+        this.groupRepository = GroupRepositoryFakeImpl.getInstance();
+        this.productRepository = ProductRepositoryFakeImpl.getInstance();
     }
 
     public static GroupServiceImpl getInstance() {

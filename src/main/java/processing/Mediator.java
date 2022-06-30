@@ -1,20 +1,25 @@
 package processing;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import packet.Packet;
+import server.StoreServer;
+import server.udp.StoreServerUDP;
 
 public class Mediator {
 	
 	private static Mediator instance;
 	
-	private Decryptor decryptor;
+	private final Decryptor decryptor;
 	
-	private Encryptor encryptor;
+	private final Encryptor encryptor;
 	
-	private Processor processor;
+	private final Processor processor;
 	
-	private Sender sender;
+	private final Sender sender;
+
+	private final StoreServer server;
 	
 	public static Mediator getInstance() {
 		if(instance == null)
@@ -26,9 +31,17 @@ public class Mediator {
 		this.decryptor = Decryptor.getInstance(this);
 		this.encryptor = Encryptor.getInstance(this);
 		this.processor = Processor.getInstance(this);
-		this.sender = Sender.getInstance();
+		this.sender = Sender.getInstance(this);
+		try {
+			this.server = new StoreServerUDP(this);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
-	
+
+	public void startServer() {
+		server.receive();
+	}
 	
 	public void receiveMessage(byte[] messageBytes) {
 		this.decryptor.addDecryptionTask(messageBytes);
@@ -45,8 +58,13 @@ public class Mediator {
 	public void notifyPacketEncrypted(byte[] encryptedPacket) {
 		this.sender.sendPacket(encryptedPacket);
 	}
+
+	public void notifyPacketSentToServer(byte[] bytes) {
+		server.send(bytes);
+	}
 	
-	public void terminateAll() {
+	public void terminateAll() throws InterruptedException {
+		server.stop();
 		this.decryptor.terminate();
 		this.processor.terminate();
 		this.encryptor.terminate();	

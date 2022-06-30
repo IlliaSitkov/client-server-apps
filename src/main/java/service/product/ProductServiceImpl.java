@@ -4,7 +4,7 @@ import exceptions.InsufficientQuantityException;
 import exceptions.NameNotUniqueException;
 import model.Product;
 import repository.product.ProductRepository;
-import repository.product.ProductRepositoryImpl;
+import repository.product.ProductRepositoryFakeImpl;
 import service.group.GroupService;
 import service.group.GroupServiceImpl;
 import utils.Utils;
@@ -19,7 +19,7 @@ public class ProductServiceImpl implements ProductService {
     private final GroupService groupService;
 
     private ProductServiceImpl() {
-        this.productRepository = ProductRepositoryImpl.getInstance();
+        this.productRepository = ProductRepositoryFakeImpl.getInstance();
         this.groupService = GroupServiceImpl.getInstance();
     }
 

@@ -20,5 +20,7 @@ public interface GroupRepository {
 
     boolean existsWithName(String name);
 
+    boolean existsWithId(Long id);
+
 
 }

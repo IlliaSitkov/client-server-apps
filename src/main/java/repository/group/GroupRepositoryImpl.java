@@ -1,77 +1,90 @@
 package repository.group;
 
-import exceptions.GroupNotFoundException;
+import exceptions.SQLExceptionRuntime;
 import model.Group;
-import utils.Utils;
+import repository.AbstractRepository;
+import utils.DBUtils;
+import utils.SQLQueries;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 
-public class GroupRepositoryImpl implements GroupRepository {
+public class GroupRepositoryImpl  extends AbstractRepository implements GroupRepository {
 
-    private List<Group> groups;
+
+
+    private GroupRepositoryImpl(String databaseName) {
+        super(SQLQueries.CREATE_GROUP_TABLE, databaseName);
+    }
+
 
     private static volatile GroupRepositoryImpl groupRepository;
 
-    private GroupRepositoryImpl() {
-        this.groups = Utils.getEmptySynchronizedList();
+    public static GroupRepositoryImpl getInstance() {
+        return getInstance(DBUtils.PROD_DB);
     }
 
-    public static GroupRepositoryImpl getInstance() {
+
+    public static GroupRepositoryImpl getInstance(String databaseName) {
         GroupRepositoryImpl repository = groupRepository;
         if (repository != null) {
             return repository;
         }
         synchronized (GroupRepositoryImpl.class) {
             if (groupRepository == null) {
-                groupRepository = new GroupRepositoryImpl();
+                groupRepository = new GroupRepositoryImpl(databaseName);
             }
             return groupRepository;
         }
     }
 
-
-     /*
-     some methods are not synchronized as they make
-     use of already synchronized list
-     (not all methods of the synchronized list are synchronized though)
-     */
-
     @Override
-    public Group save(Group g) {
-        groups.add(g);
-        return g;
+    public synchronized Group save(Group g) {
+        try{
+            PreparedStatement st = connection.prepareStatement(SQLQueries.GROUP_CREATE);
+            st.setLong(1, g.getId());
+            st.setString(2, g.getName());
+            st.setString(3, g.getDescription());
+            st.executeUpdate();
+            return g;
+        } catch (SQLException e){
+            throw new SQLExceptionRuntime(e);
+        }
     }
 
     @Override
     public Group update(Group g) {
-        delete(g.getId());
-        save(g);
-        return g;
+        return null;
     }
 
     @Override
-    public synchronized void delete(Long id) {
-        groups.removeIf(g -> Objects.equals(g.getId(), id));
+    public void delete(Long id) {
+
     }
 
     @Override
-    public synchronized Group getById(Long id) {
-        return groups.stream().filter(g -> Objects.equals(g.getId(), id)).findFirst().orElseThrow(() -> new GroupNotFoundException(id));
+    public Group getById(Long id) {
+        return null;
     }
 
     @Override
-    public synchronized List<Group> getAll() {
-        return groups;
+    public List<Group> getAll() {
+        return null;
     }
 
     @Override
     public synchronized void deleteAll() {
-        groups = Utils.getEmptySynchronizedList();
+        deleteAll(SQLQueries.GROUPS_DELETE_ALL);
     }
 
     @Override
     public synchronized boolean existsWithName(String name) {
-        return groups.stream().anyMatch(g -> g.getName().equalsIgnoreCase(name));
+        return existsWithName(name, SQLQueries.GROUP_FIND_ALL_BY_NAME);
+    }
+
+    @Override
+    public synchronized boolean existsWithId(Long id) {
+        return existsWithId(id, SQLQueries.GROUP_FIND_ALL_BY_ID);
     }
 }

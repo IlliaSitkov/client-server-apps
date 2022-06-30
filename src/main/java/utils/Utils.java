@@ -3,11 +3,16 @@ package utils;
 import exceptions.InvalidNumberException;
 import exceptions.InvalidStringException;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class Utils {
+
+    private Utils() {
+        throw new RuntimeException("Can not create object");
+    }
 	
 	public static final int THREAD_NUMB = 3;
 
@@ -46,5 +51,17 @@ public class Utils {
     public static <T> List<T> getEmptySynchronizedList() {
         return Collections.synchronizedList(new ArrayList<>());
     }
+
+
+    public static long getPacketId(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        return buffer.getLong(2);
+    }
+
+
+
+
+
+
 
 }

@@ -1,8 +1,10 @@
 package repository.product;
 
 import model.Product;
+import utils.FilterCriteria;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ProductRepository {
 
@@ -21,6 +23,16 @@ public interface ProductRepository {
     void deleteOfGroup(Long groupId);
 
     boolean existsWithName(String name);
+
+    boolean existsWithId(Long id);
+
+    List<Product> findByCriteria(
+            String searchString,
+            double minPrice, double maxPrice,
+            int minQuantity, int maxQuantity,
+            Long groupId);
+
+    List<Product> findByCriteria(Map<FilterCriteria, Object> criteria);
 
 
 }

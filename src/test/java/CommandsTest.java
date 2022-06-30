@@ -11,9 +11,9 @@ import packet.PacketEncryptor;
 import processing.Receiver;
 import processing.ReceiverFakeImpl;
 import repository.group.GroupRepository;
-import repository.group.GroupRepositoryImpl;
+import repository.group.GroupRepositoryFakeImpl;
 import repository.product.ProductRepository;
-import repository.product.ProductRepositoryImpl;
+import repository.product.ProductRepositoryFakeImpl;
 import service.group.GroupService;
 import service.group.GroupServiceImpl;
 import service.product.ProductService;
@@ -41,11 +41,11 @@ public class CommandsTest {
     
     private final GroupService groupService = GroupServiceImpl.getInstance();
 
-    private final GroupRepository groupRepository = GroupRepositoryImpl.getInstance();
+    private final GroupRepository groupRepository = GroupRepositoryFakeImpl.getInstance();
 
     private final ProductService productService = ProductServiceImpl.getInstance();
 
-    private final ProductRepository productRepository = ProductRepositoryImpl.getInstance();
+    private final ProductRepository productRepository = ProductRepositoryFakeImpl.getInstance();
 
 
     @AfterEach
