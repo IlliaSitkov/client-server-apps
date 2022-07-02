@@ -89,10 +89,6 @@ public class ProductRepositoryFakeImpl implements ProductRepository {
         return false;
     }
 
-    @Override
-    public List<Product> findByCriteria(String searchString, double minPrice, double maxPrice, int minQuantity, int maxQuantity, Long groupId) {
-        return null;
-    }
 
     @Override
     public List<Product> listByCriteria(Map<SortCriteria, SortOrder> sortMap) {
@@ -103,4 +99,5 @@ public class ProductRepositoryFakeImpl implements ProductRepository {
     public List<Product> findByCriteria(Map<FilterCriteria, Object> criteria) {
         return null;
     }
+
 }

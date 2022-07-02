@@ -2,6 +2,7 @@ import exceptions.SQLExceptionRuntime;
 import model.Group;
 import model.Product;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import repository.group.GroupRepository;
@@ -24,6 +25,10 @@ public class ProductRepositoryTest {
     private final ProductRepository productRepository = ProductRepositoryImpl.getInstance(DBUtils.TEST_DB);
     private final GroupRepository groupRepository = GroupRepositoryImpl.getInstance(DBUtils.TEST_DB);
 
+    @BeforeClass
+    public static void setEnv() {
+        System.setProperty("ENV", "DEV");
+    }
     @Before
     public void clearDB() {
         groupRepository.deleteAll();
@@ -136,8 +141,6 @@ public class ProductRepositoryTest {
             Product p = new Product("P"+i, "D1", "Pr1", i, 23,1L);
             productRepository.save(p);
         }
-        Assertions.assertEquals(times, productRepository.findByCriteria("", 0,100, 0, times, -1L).size());
-        Assertions.assertEquals(times/2, productRepository.findByCriteria("", 0,100, times/2, times, -1L).size());
 
         Assertions.assertEquals(times, productRepository.findByCriteria(Map.of(FilterCriteria.MIN_QUANTITY, 0, FilterCriteria.MAX_QUANTITY, times)).size());
         Assertions.assertEquals(times/2, productRepository.findByCriteria(Map.of(FilterCriteria.MIN_QUANTITY, times/2, FilterCriteria.MAX_QUANTITY, times)).size());
@@ -158,7 +161,6 @@ public class ProductRepositoryTest {
         productRepository.save(p3);
 
         Assertions.assertEquals(3, productRepository.findByCriteria(Map.of(FilterCriteria.SEARCH_STRING, "prod")).size());
-        Assertions.assertEquals(3, productRepository.findByCriteria("prod",0,1000000,0,100000,-1L).size());
     }
 
 
@@ -179,7 +181,6 @@ public class ProductRepositoryTest {
         productRepository.save(p4);
 
         Assertions.assertEquals(3, productRepository.findByCriteria(Map.of(FilterCriteria.MIN_PRICE, 23.1, FilterCriteria.MAX_PRICE, 105.5)).size());
-        Assertions.assertEquals(3, productRepository.findByCriteria("",23.1,105.5,0,100000,-1L).size());
     }
 
 
@@ -201,8 +202,9 @@ public class ProductRepositoryTest {
         productRepository.save(p3);
         productRepository.save(p4);
 
+        productRepository.findByCriteria(Map.of(FilterCriteria.GROUP_ID, 1L)).forEach(System.out::println);
+
         Assertions.assertEquals(4, productRepository.findByCriteria(Map.of(FilterCriteria.GROUP_ID, 1L)).size());
-        Assertions.assertEquals(4, productRepository.findByCriteria("",0,1000000,0,100000,1L).size());
     }
 
     @Test
@@ -226,10 +228,6 @@ public class ProductRepositoryTest {
         Assertions.assertEquals(0, productRepository.findByCriteria(Map.of(FilterCriteria.MAX_QUANTITY, -10)).size());
         Assertions.assertEquals(0, productRepository.findByCriteria(Map.of(FilterCriteria.MAX_PRICE, -10)).size());
         Assertions.assertEquals(0, productRepository.findByCriteria(Map.of(FilterCriteria.GROUP_ID, -10L)).size());
-
-        Assertions.assertEquals(0, productRepository.findByCriteria("",0,1000000,0,1000000,235L).size());
-        Assertions.assertEquals(0, productRepository.findByCriteria("",0,-10,0,100000,1L).size());
-        Assertions.assertEquals(0, productRepository.findByCriteria("",0,1000000,0,-10,1L).size());
     }
 
 

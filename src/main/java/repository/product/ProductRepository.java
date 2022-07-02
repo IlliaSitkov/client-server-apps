@@ -28,15 +28,11 @@ public interface ProductRepository {
 
     boolean existsWithId(Long id);
 
-    List<Product> findByCriteria(
-            String searchString,
-            double minPrice, double maxPrice,
-            int minQuantity, int maxQuantity,
-            Long groupId);
-
     List<Product> listByCriteria(Map<SortCriteria, SortOrder> sortMap);
 
     List<Product> findByCriteria(Map<FilterCriteria, Object> criteria);
+
+
 
 
 }

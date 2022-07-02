@@ -10,7 +10,7 @@ public class SQLQueries {
     public static final String CREATE_GROUP_TABLE =
             "CREATE TABLE IF NOT EXISTS groups (\n" +
             "    group_id BIGINT PRIMARY KEY,\n" +
-            "    group_name VARCHAR(100) CHECK (length(product_name) > 1) NOT NULL UNIQUE,\n" +
+            "    group_name VARCHAR(100) CHECK (length(group_name) > 1) NOT NULL UNIQUE,\n" +
             "    group_description VARCHAR(255)\n" +
             ");";
 
@@ -64,53 +64,9 @@ public class SQLQueries {
             "FROM products\n" +
             "WHERE product_id = ?;";
 
-    public static final String PRODUCT_FILTER =
-            "SELECT *\n" +
-            "FROM products\n" +
-            "WHERE\n" +
-            "    (\n" +
-            "        (lower(product_name) LIKE '%'||lower(?)||'%')\n" +
-            "        OR (lower(product_description) LIKE '%'||lower(?)||'%')\n" +
-            "        OR (lower(product_producer) LIKE '%'||lower(?)||'%')\n" +
-            "        )\n" +
-            "  AND (product_quantity BETWEEN ? AND ?)\n" +
-            "  AND (product_price BETWEEN ? AND ?)\n" +
-            "  AND (? < 0 OR group_id = ?);";
-
-
     public static final String PRODUCT_GET_ALL =
             "SELECT *\n" +
             "FROM products;\n";
-
-
-    public static final String PRODUCT_FILTER_BASE =
-            "SELECT *\n" +
-            "FROM products\n" +
-            "WHERE TRUE ";
-
-
-    public static final String SEARCH_STRING_FILTER =
-            "AND (\n"+
-            "(lower(product_name) LIKE '%'||lower(?)||'%')\n" +
-            "OR (lower(product_description) LIKE '%'||lower(?)||'%')\n" +
-            "OR (lower(product_producer) LIKE '%'||lower(?)||'%')\n" +
-            ") ";
-
-    public static final String MIN_PRICE_FILTER =
-            "AND (product_price >= ?) ";
-
-    public static final String MAX_PRICE_FILTER =
-            "AND (product_price <= ?) ";
-
-    public static final String MIN_QUANTITY_FILTER =
-            "AND (product_quantity >= ?) ";
-
-    public static final String MAX_QUANTITY_FILTER =
-            "AND (product_quantity <= ?) ";
-
-    public static final String GROUP_ID_FILTER =
-            "AND (group_id = ?) ";
-
 
     public static final String PRODUCT_ORDER_BY_BASE =
             "SELECT *\n" +

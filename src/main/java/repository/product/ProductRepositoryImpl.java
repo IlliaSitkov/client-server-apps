@@ -2,9 +2,15 @@ package repository.product;
 
 import exceptions.SQLExceptionRuntime;
 import model.Product;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import repository.AbstractRepository;
 import utils.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -104,60 +110,46 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
         return existsWithId(id, SQLQueries.PRODUCT_FIND_ALL_BY_ID);
     }
 
-
-    public synchronized List<Product> findByCriteria(
-            String searchString,
-            double minPrice, double maxPrice,
-            int minQuantity, int maxQuantity,
-            Long groupId) {
-        try{
-            PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_FILTER);
-
-
-            st.setString(1, searchString);
-            st.setString(2, searchString);
-            st.setString(3, searchString);
-            st.setInt(4, minQuantity);
-            st.setInt(5, maxQuantity);
-            st.setDouble(6, minPrice);
-            st.setDouble(7, maxPrice);
-            st.setLong(8, groupId);
-            st.setLong(9, groupId);
-            st.execute();
-            return DBUtils.resultSetToProductList(st.getResultSet());
-        } catch (SQLException e){
-            throw new SQLExceptionRuntime(e);
-        }
-    }
     @Override
     public synchronized List<Product> findByCriteria(Map<FilterCriteria, Object> criteria) {
-        try{
-            PreparedStatement st = prepareFilterStatement(criteria);
-            st.execute();
-            return DBUtils.resultSetToProductList(st.getResultSet());
-        } catch (SQLException e){
-            throw new SQLExceptionRuntime(e);
+        Session session = HibernateUtil.getHibernateSession();
+        CriteriaBuilder cb = session.getCriteriaBuilder();
+        CriteriaQuery<Product> cr = cb.createQuery(Product.class);
+        Root<Product> root = cr.from(Product.class);
+        List<Predicate> predicates = new ArrayList<>();
+        if (criteria.containsKey(FilterCriteria.SEARCH_STRING)) {
+            String str = ((String) criteria.get(FilterCriteria.SEARCH_STRING)).toLowerCase();
+            predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("name")), "%"+str+"%"),
+                    cb.like(cb.lower(root.get("description")), "%"+str+"%"),
+                    cb.like(cb.lower(root.get("producer")), "%"+str+"%")
+                    ));
         }
-    }
+        if (criteria.containsKey(FilterCriteria.MIN_QUANTITY)) {
+            int minQuant = (int) criteria.get(FilterCriteria.MIN_QUANTITY);
+            predicates.add(cb.ge(root.get("quantity"), minQuant));
+        }
+        if (criteria.containsKey(FilterCriteria.MAX_QUANTITY)) {
+            int maxQuant = (int) criteria.get(FilterCriteria.MAX_QUANTITY);
+            predicates.add(cb.le(root.get("quantity"), maxQuant));
+        }
+        if (criteria.containsKey(FilterCriteria.MIN_PRICE)) {
+            double minPrice = Double.parseDouble(criteria.get(FilterCriteria.MIN_PRICE).toString());
+            predicates.add(cb.ge(root.get("price"), minPrice));
+        }
+        if (criteria.containsKey(FilterCriteria.MAX_PRICE)) {
+            double maxPrice = Double.parseDouble(criteria.get(FilterCriteria.MAX_PRICE).toString());
+            predicates.add(cb.le(root.get("price"), maxPrice));
+        }
+        if (criteria.containsKey(FilterCriteria.GROUP_ID)) {
+            long groupId = (long) criteria.get(FilterCriteria.GROUP_ID);
+            predicates.add(cb.equal(root.get("groupId"), groupId));
+        }
 
+        cr.select(root).where(cb.and(predicates.toArray(new Predicate[0])));
 
-    private PreparedStatement prepareFilterStatement(Map<FilterCriteria, Object> criteriaMap) throws SQLException {
-        StringBuilder filterQuery = new StringBuilder(SQLQueries.PRODUCT_FILTER_BASE);
-        List<Object> params = new LinkedList<>();
-        for (FilterCriteria criteria: criteriaMap.keySet()) {
-            filterQuery.append(criteria.getQuery());
-            Object o = criteriaMap.get(criteria);
-            for (int i = 0; i < criteria.getParamRepeatTimes(); i++) {
-                params.add(o);
-            }
-        }
-        PreparedStatement preparedStatement = connection.prepareStatement(filterQuery.append(';').toString());
-        int i = 1;
-        for (Object o: params) {
-            preparedStatement.setObject(i, o);
-            i++;
-        }
-        return preparedStatement;
+        Query<Product> query = session.createQuery(cr);
+        return query.getResultList();
     }
 
 
