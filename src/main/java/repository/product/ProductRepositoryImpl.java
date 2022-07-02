@@ -3,13 +3,12 @@ package repository.product;
 import exceptions.SQLExceptionRuntime;
 import model.Product;
 import repository.AbstractRepository;
-import utils.FilterCriteria;
-import utils.DBUtils;
-import utils.SQLQueries;
+import utils.*;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -162,13 +161,26 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
 
+    public List<Product> listByCriteria(Map<SortCriteria, SortOrder> sortMap) {
+        if (sortMap.isEmpty()) {
+            return getAll();
+        }
+        try{
+            Statement st = connection.createStatement();
+            st.execute(constructSortStatement(sortMap));
+            return DBUtils.resultSetToProductList(st.getResultSet());
+        } catch (SQLException e){
+            throw new SQLExceptionRuntime(e);
+        }
+    }
 
-
-
-
-
-
-
+    private String constructSortStatement(Map<SortCriteria, SortOrder> sortMap) {
+        List<String> sortStrings = new ArrayList<>();
+        for (SortCriteria sortCriteria: sortMap.keySet()) {
+            sortStrings.add(sortCriteria+" "+sortMap.get(sortCriteria));
+        }
+        return SQLQueries.PRODUCT_ORDER_BY_BASE + String.join(",", sortStrings)+";";
+    }
 
 
 }

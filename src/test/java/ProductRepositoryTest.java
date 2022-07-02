@@ -10,8 +10,13 @@ import repository.product.ProductRepository;
 import repository.product.ProductRepositoryImpl;
 import utils.FilterCriteria;
 import utils.DBUtils;
+import utils.SortCriteria;
+import utils.SortOrder;
 
-import java.util.Map;
+import static org.assertj.core.api.Assertions.*;
+
+
+import java.util.*;
 
 public class ProductRepositoryTest {
 
@@ -228,6 +233,79 @@ public class ProductRepositoryTest {
     }
 
 
+
+    @Test
+    public void sortByCriteria_whenNameCriteria_thenProperlySorted() {
+        Group g = new Group(1L,"g1", "d1");
+        groupRepository.save(g);
+        Product p = new Product("Product", "D1", "Pr1", 34, 23.1,1L);
+        Product p1 = new Product("My Product", "D1", "Pr1", 46, 105.5,1L);
+        Product p2 = new Product("Banana", "Fruit", "producer", 46, 23,1L);
+        Product p3 = new Product("Apple", "Fruit", "Company", 33, 56,1L);
+        Product p4 = new Product("Pineapple", "Fruit", "Company", 90, 105.7,1L);
+
+        productRepository.save(p);
+        productRepository.save(p1);
+        productRepository.save(p2);
+        productRepository.save(p3);
+        productRepository.save(p4);
+
+        List<Product> listAsc = productRepository.listByCriteria(Map.of(SortCriteria.BY_NAME, SortOrder.ASCENDING));
+        List<Product> listDesc = productRepository.listByCriteria(Map.of(SortCriteria.BY_NAME, SortOrder.DESCENDING));
+
+        assertThat(listAsc).isSortedAccordingTo(Comparator.comparing(Product::getName));
+        assertThat(listDesc).isSortedAccordingTo(Comparator.comparing(Product::getName).reversed());
+
+    }
+
+
+    @Test
+    public void sortByCriteria_whenQuantityCriteria_thenProperlySorted() {
+        Group g = new Group(1L,"g1", "d1");
+        groupRepository.save(g);
+        Product p = new Product("Product", "D1", "Pr1", 34, 23.1,1L);
+        Product p1 = new Product("My Product", "D1", "Pr1", 46, 105.5,1L);
+        Product p2 = new Product("Banana", "Fruit", "producer", 46, 23,1L);
+        Product p3 = new Product("Apple", "Fruit", "Company", 33, 56,1L);
+        Product p4 = new Product("Pineapple", "Fruit", "Company", 90, 105.7,1L);
+
+        productRepository.save(p);
+        productRepository.save(p1);
+        productRepository.save(p2);
+        productRepository.save(p3);
+        productRepository.save(p4);
+
+        List<Product> listAsc = productRepository.listByCriteria(Map.of(SortCriteria.BY_QUANTITY, SortOrder.ASCENDING));
+        List<Product> listDesc = productRepository.listByCriteria(Map.of(SortCriteria.BY_QUANTITY, SortOrder.DESCENDING));
+
+        assertThat(listAsc).isSortedAccordingTo(Comparator.comparing(Product::getQuantity));
+        assertThat(listDesc).isSortedAccordingTo(Comparator.comparing(Product::getQuantity).reversed());
+
+    }
+
+    @Test
+    public void sortByCriteria_whenPriceCriteria_thenProperlySorted() {
+        Group g = new Group(1L,"g1", "d1");
+        groupRepository.save(g);
+        Product p = new Product("Product", "D1", "Pr1", 34, 23.1,1L);
+        Product p1 = new Product("My Product", "D1", "Pr1", 46, 105.5,1L);
+        Product p2 = new Product("Banana", "Fruit", "producer", 46, 56,1L);
+        Product p3 = new Product("Apple", "Fruit", "Company", 33, 56,1L);
+        Product p4 = new Product("Pineapple", "Fruit", "Company", 90, 105.7,1L);
+
+        productRepository.save(p);
+        productRepository.save(p1);
+        productRepository.save(p2);
+        productRepository.save(p3);
+        productRepository.save(p4);
+
+        List<Product> listAsc = productRepository.listByCriteria(Map.of(SortCriteria.BY_PRICE, SortOrder.ASCENDING));
+        List<Product> listDesc = productRepository.listByCriteria(Map.of(SortCriteria.BY_PRICE, SortOrder.DESCENDING));
+
+        assertThat(listAsc).isSortedAccordingTo(Comparator.comparing(Product::getPrice));
+        assertThat(listDesc).isSortedAccordingTo(Comparator.comparing(Product::getPrice).reversed());
+
+    }
 
 
 

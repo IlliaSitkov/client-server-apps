@@ -2,6 +2,8 @@ package repository.product;
 
 import model.Product;
 import utils.FilterCriteria;
+import utils.SortCriteria;
+import utils.SortOrder;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,8 @@ public interface ProductRepository {
             double minPrice, double maxPrice,
             int minQuantity, int maxQuantity,
             Long groupId);
+
+    List<Product> listByCriteria(Map<SortCriteria, SortOrder> sortMap);
 
     List<Product> findByCriteria(Map<FilterCriteria, Object> criteria);
 

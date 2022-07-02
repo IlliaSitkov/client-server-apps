@@ -3,6 +3,8 @@ package repository.product;
 import exceptions.ProductNotFoundException;
 import model.Product;
 import utils.FilterCriteria;
+import utils.SortCriteria;
+import utils.SortOrder;
 import utils.Utils;
 
 import java.util.List;
@@ -89,6 +91,11 @@ public class ProductRepositoryFakeImpl implements ProductRepository {
 
     @Override
     public List<Product> findByCriteria(String searchString, double minPrice, double maxPrice, int minQuantity, int maxQuantity, Long groupId) {
+        return null;
+    }
+
+    @Override
+    public List<Product> listByCriteria(Map<SortCriteria, SortOrder> sortMap) {
         return null;
     }
 

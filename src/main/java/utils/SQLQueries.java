@@ -112,4 +112,9 @@ public class SQLQueries {
             "AND (group_id = ?) ";
 
 
+    public static final String PRODUCT_ORDER_BY_BASE =
+            "SELECT *\n" +
+            "FROM products\n" +
+            "ORDER BY ";
+
 }
