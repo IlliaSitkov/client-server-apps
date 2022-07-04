@@ -1,5 +1,6 @@
 package processing;
 
+import java.io.OutputStream;
 import java.util.Base64;
 
 public class Sender {
@@ -23,6 +24,10 @@ public class Sender {
 		String strBytes = Base64.getEncoder().encodeToString(packet);
 		System.out.println("Sending message - " + strBytes);
 		mediator.notifyPacketSentToServer(packet);
+	}
+	
+	public void sendPacket(byte[] packet, OutputStream outStream) {
+		mediator.notifyPacketSentToServer(packet, outStream);
 	}
 
 }

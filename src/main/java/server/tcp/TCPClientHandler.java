@@ -4,20 +4,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.List;
 
-import exceptions.CipherException;
-import exceptions.PacketDecryptionException;
-import message.Message;
 import packet.Packet;
-import packet.PacketEncryptor;
+import processing.Mediator;
 
 public class TCPClientHandler implements Runnable {
 	
 	private Socket clientSocket;
 	
-	public TCPClientHandler(Socket socket) {
+	private Mediator mediator;
+	
+	public TCPClientHandler(Socket socket, Mediator mediator) {
 		this.clientSocket = socket;
+		this.mediator = mediator;
 	}
 	
 	@Override
@@ -39,14 +38,15 @@ public class TCPClientHandler implements Runnable {
 					outStream.write(100);
 					continue;
 				}
-				List<Packet> packets = PacketEncryptor.decryptPacket(bytes);
-	            if (packets.size() < 1) {
-	                throw new PacketDecryptionException();
-	            }
-	            Packet packet = packets.get(0);
-	            System.out.println("Received packet: " + packet.toString());
-	            Packet res = new Packet(packet.getBSrc(), packet.getBPktId(), new Message(0, 0, "{\"result\":\"OK\"}"));
-	            outStream.write(PacketEncryptor.encryptPacket(res));
+//				List<Packet> packets = PacketEncryptor.decryptPacket(bytes);
+//	            if (packets.size() < 1) {
+//	                throw new PacketDecryptionException();
+//	            }
+//	            Packet packet = packets.get(0);
+//	            System.out.println("Received packet: " + packet.toString());
+//	            Packet res = new Packet(packet.getBSrc(), packet.getBPktId(), new Message(0, 0, "{\"result\":\"OK\"}"));
+//	            outStream.write(PacketEncryptor.encryptPacket(res));
+				this.mediator.receiveMessage(bytes, outStream);
 			}
 			
 			inStream.close();
@@ -56,9 +56,7 @@ public class TCPClientHandler implements Runnable {
 		} catch (IOException e) {
 			//throw new RuntimeException(e);
 			System.out.println(e.getMessage());
-		} catch (CipherException e) {
-			e.printStackTrace();
-		} 
+		}
 	}
 	
 	private boolean foldsTo(int val, byte[] arr) {

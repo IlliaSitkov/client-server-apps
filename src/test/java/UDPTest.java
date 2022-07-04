@@ -106,7 +106,7 @@ public class UDPTest {
 
 
     @AfterAll
-    public static void stopServer() throws InterruptedException {
+    public static void stopServer() throws InterruptedException, IOException {
         mediator.terminateAll();
     }
 

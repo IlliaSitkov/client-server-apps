@@ -1,5 +1,6 @@
 package processing;
 
+import java.io.OutputStream;
 import java.util.Optional;
 
 import message.Message;
@@ -34,12 +35,15 @@ public class Processor extends BaseMultiThreadUnit {
 		this.groupService = GroupServiceImpl.getInstance();
 	}
 	
-	public void addProcessingTask(Packet packet) {
+	public void addProcessingTask(Packet packet, OutputStream outStream) {
 		this.execService.execute(() -> {
 			Message msg = packet.getBMsg();
 			var optional = Commands.valueOf(msg.getCType());
 			if(optional.isEmpty()) {
-				this.mediator.notifyPacketProcessed(packet, false, Optional.ofNullable(null), Optional.ofNullable("Such command doesn`t exist"));
+				if(outStream == null)
+					this.mediator.notifyPacketProcessed(packet, false, Optional.ofNullable(null), Optional.ofNullable("Such command doesn`t exist"));
+				else
+					this.mediator.notifyPacketProcessed(packet, false, Optional.ofNullable(null), Optional.ofNullable("Such command doesn`t exist"), outStream);
 				return;
 			}
 			Commands command = optional.get();
@@ -86,9 +90,15 @@ public class Processor extends BaseMultiThreadUnit {
 								msg.getMessageJSON().getDouble(JSONStrings.PRICE));
 					}
 				}
-				this.mediator.notifyPacketProcessed(packet, true, possibleResult, Optional.ofNullable(null));
+				if(outStream == null)
+					this.mediator.notifyPacketProcessed(packet, true, possibleResult, Optional.ofNullable(null));
+				else
+					this.mediator.notifyPacketProcessed(packet, true, possibleResult, Optional.ofNullable(null), outStream);
 			} catch(RuntimeException e) {
-				this.mediator.notifyPacketProcessed(packet, false, Optional.ofNullable(null), Optional.ofNullable(e.getMessage()));
+				if(outStream == null)
+					this.mediator.notifyPacketProcessed(packet, false, Optional.ofNullable(null), Optional.ofNullable(e.getMessage()));
+				else
+					this.mediator.notifyPacketProcessed(packet, false, Optional.ofNullable(null), Optional.ofNullable(e.getMessage()), outStream);
 			}
 		});
 	}
