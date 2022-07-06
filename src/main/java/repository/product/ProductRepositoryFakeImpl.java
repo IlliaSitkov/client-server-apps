@@ -1,6 +1,5 @@
 package repository.product;
 
-import exceptions.ProductNotFoundException;
 import model.Product;
 import utils.FilterCriteria;
 import utils.SortCriteria;
@@ -10,6 +9,7 @@ import utils.Utils;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ProductRepositoryFakeImpl implements ProductRepository {
 
@@ -48,20 +48,21 @@ public class ProductRepositoryFakeImpl implements ProductRepository {
     }
 
     @Override
-    public Product update(Product p) {
+    public Optional<Product> update(Product p) {
         delete(p.getId());
         save(p);
-        return p;
+        return Optional.of(p);
     }
 
     @Override
-    public synchronized void delete(Long id) {
+    public synchronized boolean delete(Long id) {
         products.removeIf(p -> Objects.equals(p.getId(), id));
+        return true;
     }
 
     @Override
-    public synchronized Product getById(Long id) {
-        return products.stream().filter(p -> Objects.equals(p.getId(), id)).findFirst().orElseThrow(() -> new ProductNotFoundException(id));
+    public synchronized Optional<Product> getById(Long id) {
+        return products.stream().filter(p -> Objects.equals(p.getId(), id)).findFirst();
     }
 
     @Override
@@ -75,8 +76,9 @@ public class ProductRepositoryFakeImpl implements ProductRepository {
     }
 
     @Override
-    public synchronized void deleteOfGroup(Long groupId) {
+    public synchronized boolean deleteOfGroup(Long groupId) {
         products.removeIf(p -> Objects.equals(p.getGroupId(), groupId));
+        return true;
     }
 
     @Override
@@ -99,5 +101,11 @@ public class ProductRepositoryFakeImpl implements ProductRepository {
     public List<Product> findByCriteria(Map<FilterCriteria, Object> criteria) {
         return null;
     }
+
+	@Override
+	public boolean deleteByName(String name) {
+		// TODO Auto-generated method stub
+		return true;
+	}
 
 }

@@ -7,23 +7,26 @@ import utils.SortOrder;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface ProductRepository {
 
     Product save(Product p);
 
-    Product update(Product p);
+    Optional<Product> update(Product p);
 
-    void delete(Long id);
+    boolean delete(Long id);
 
-    Product getById(Long id);
+    Optional<Product> getById(Long id);
 
     List<Product> getAll();
 
     void deleteAll();
 
-    void deleteOfGroup(Long groupId);
-
+    boolean deleteOfGroup(Long groupId);
+    
+    boolean deleteByName(String name);
+    
     boolean existsWithName(String name);
 
     boolean existsWithId(Long id);

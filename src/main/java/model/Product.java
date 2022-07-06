@@ -1,5 +1,6 @@
 package model;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import utils.Utils;
@@ -12,6 +13,7 @@ import javax.persistence.Table;
 @Getter
 @Entity
 @Table(name = "products")
+@EqualsAndHashCode
 public class Product {
 
     @Id

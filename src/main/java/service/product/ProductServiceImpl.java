@@ -62,7 +62,7 @@ public class ProductServiceImpl implements ProductService {
             product.setQuantity(quantity);
             product.setPrice(price);
             product.setGroupId(groupId);
-            return productRepository.update(product);
+            return productRepository.update(product).get();
         }
     }
 
@@ -73,7 +73,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public synchronized Product getProductById(Long productId) {
-        return productRepository.getById(productId);
+        return productRepository.getById(productId).get();
     }
 
     @Override

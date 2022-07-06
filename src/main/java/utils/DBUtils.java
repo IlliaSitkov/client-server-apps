@@ -1,5 +1,6 @@
 package utils;
 
+import model.Group;
 import model.Product;
 
 import java.sql.*;
@@ -38,6 +39,19 @@ public class DBUtils {
         return list;
     }
 
+    
+    public static List<Group> resultSetToGroupList(ResultSet resultSet) throws SQLException {
+    	List<Group> list = new ArrayList<>();
+        while (resultSet.next()) {
+            list.add(
+                    new Group(
+                            resultSet.getLong("group_id"),
+                            resultSet.getString("group_name"),
+                            resultSet.getString("group_description"))
+                    );
+        }
+        return list;
+    }
 
 
 

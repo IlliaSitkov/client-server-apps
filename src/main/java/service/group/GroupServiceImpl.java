@@ -53,7 +53,7 @@ public class GroupServiceImpl implements GroupService{
         Group group = getGroupById(groupId);
         group.setDescription(pDescription);
         group.setName(pName);
-        return groupRepository.update(group);
+        return groupRepository.update(group).get();
     }
 
     @Override
@@ -64,7 +64,7 @@ public class GroupServiceImpl implements GroupService{
 
     @Override
     public synchronized Group getGroupById(Long groupId) {
-        return groupRepository.getById(groupId);
+        return groupRepository.getById(groupId).get();
     }
 
     @Override
