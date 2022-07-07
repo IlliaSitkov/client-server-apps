@@ -1,5 +1,7 @@
 package processing;
 
+import java.io.OutputStream;
+
 import exceptions.CipherException;
 import packet.Packet;
 import packet.PacketEncryptor;
@@ -27,6 +29,18 @@ public class Decryptor extends BaseMultiThreadUnit {
 				var result = PacketEncryptor.decryptPacket(encryptedMessage);
 				for(Packet p : result)
 					this.mediator.notifyPacketDecrypted(p);
+			} catch (CipherException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	public void addDecryptionTask(byte[] encryptedMessage, OutputStream outStream) {
+		this.execService.execute(() -> {
+			try {
+				var result = PacketEncryptor.decryptPacket(encryptedMessage);
+				for(Packet p : result)
+					this.mediator.notifyPacketDecrypted(p, outStream);
 			} catch (CipherException e) {
 				e.printStackTrace();
 			}

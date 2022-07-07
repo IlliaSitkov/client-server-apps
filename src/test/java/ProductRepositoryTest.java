@@ -1,9 +1,9 @@
 import exceptions.SQLExceptionRuntime;
 import model.Group;
 import model.Product;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import repository.group.GroupRepository;
 import repository.group.GroupRepositoryImpl;
@@ -25,11 +25,12 @@ public class ProductRepositoryTest {
     private final ProductRepository productRepository = ProductRepositoryImpl.getInstance(DBUtils.TEST_DB);
     private final GroupRepository groupRepository = GroupRepositoryImpl.getInstance(DBUtils.TEST_DB);
 
-    @BeforeClass
+    @BeforeAll
     public static void setEnv() {
         System.setProperty("ENV", "DEV");
     }
-    @Before
+    
+    @BeforeEach
     public void clearDB() {
         groupRepository.deleteAll();
     }
@@ -304,7 +305,230 @@ public class ProductRepositoryTest {
         assertThat(listDesc).isSortedAccordingTo(Comparator.comparing(Product::getPrice).reversed());
 
     }
-
+  
+//-------------------------------------------------------------------------------------
+    
+    @Test
+    public void getGroupById_whenGroupExists_thenGroupReturned() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Optional<Group> g2 = this.groupRepository.getById(g.getId());
+    	Assertions.assertFalse(g2.isEmpty());
+    	Assertions.assertEquals(g, g2.get());
+    }
+    
+    @Test
+    public void getGroupById_whenGroupDoesntExist_thenOptionalIsEmpty() {
+    	Optional<Group> res = this.groupRepository.getById(22L);
+    	Assertions.assertTrue(res.isEmpty());
+    }
+    
+    @Test
+    public void updateGroup_whenGroupExists_thenGroupUpdated() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	g.setName("new group1");
+    	g.setDescription("test");
+    	Optional<Group> opt = this.groupRepository.update(g);
+    	Group res = this.groupRepository.getById(g.getId()).get();
+    	Assertions.assertFalse(opt.isEmpty());
+    	Assertions.assertEquals(res.getName(), g.getName());
+    	Assertions.assertEquals(res.getDescription(), g.getDescription());
+    }
+    
+    @Test 
+    public void updateGroup_whenGroupDoesntExist_thenOptionalIsEmpty() {
+    	Group g = new Group(1L, "g1", "d1");
+    	Optional<Group> opt = this.groupRepository.update(g);
+    	Assertions.assertTrue(opt.isEmpty());
+    	Assertions.assertTrue(this.groupRepository.getAll().isEmpty());
+    }
+    
+    @Test
+    public void updateGroup_whenSuchGroupNameExists_thenExceptionThrown() {
+    	Group g = new Group(1L, "g1", "d1");
+    	Group g2 = new Group(2L, "g2", "d1");
+    	this.groupRepository.save(g);
+    	this.groupRepository.save(g2);
+    	String initName = g2.getName();
+    	g2.setName(g.getName());
+    	Assertions.assertThrows(RuntimeException.class, () -> {this.groupRepository.update(g2);});
+    	Assertions.assertEquals(initName, this.groupRepository.getById(g2.getId()).get().getName());
+    }
+    
+    @Test
+    public void deleteGroupById_whenGroupExists_thenDeleted() {
+    	Group g = new Group(1L, "g1", "d1");
+    	Group g2 = new Group(2L, "g2", "d1");
+    	this.groupRepository.save(g);
+    	this.groupRepository.save(g2);
+    	boolean res = this.groupRepository.delete(g.getId());
+    	Assertions.assertTrue(res);
+    	Assertions.assertTrue(this.groupRepository.getAll().size() == 1);
+    }
+    
+    @Test
+    public void deleteGroupById_whenGroupDoesntExist_thenResultIsFalse() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	boolean res = this.groupRepository.delete(22L);
+    	Assertions.assertFalse(res);
+    	Assertions.assertTrue(this.groupRepository.getAll().size() == 1);
+    }
+       
+    @Test
+    public void deleteGroupByName_whenGroupExists_thenDeleted() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	boolean res = this.groupRepository.deleteByName(g.getName());
+    	Assertions.assertTrue(res);
+    	Assertions.assertTrue(this.groupRepository.getAll().isEmpty());
+    }
+    
+    @Test
+    public void deleteGroupByName_whenGroupWithSuchNameDoesntExist_thenResultIsFalse() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	boolean res = this.groupRepository.deleteByName("g");
+    	Assertions.assertFalse(res);
+    	Assertions.assertTrue(this.groupRepository.getAll().size() == 1);
+    }
+    
+    //product tests
+    
+    @Test
+    public void getProductById_whenProductExists_thenProductReturned() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	this.productRepository.save(p);
+    	Optional<Product> opt = this.productRepository.getById(p.getId());
+    	Assertions.assertFalse(opt.isEmpty());
+    	Assertions.assertEquals(p, opt.get());
+    }
+    
+    @Test
+    public void getProductById_whenProductDoesntExist_thenOptionalIsEmpty() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	this.productRepository.save(p);
+    	Optional<Product> opt = this.productRepository.getById(22L);
+    	Assertions.assertTrue(opt.isEmpty());
+    }
+    
+    @Test
+    public void updateProduct_whenProductExists_thenProductUpdated() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	this.productRepository.save(p);
+    	p.setName("test2");
+    	p.setDescription("testDescr2");
+    	p.setPrice(76.0);
+    	Optional<Product> opt = this.productRepository.update(p);
+    	Assertions.assertFalse(opt.isEmpty());
+    	Assertions.assertEquals(p, this.productRepository.getById(p.getId()).get());
+    }
+    
+    @Test
+    public void updateProduct_whenIncorrectGroupFK_thenExceptionThrown() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	this.productRepository.save(p);
+    	p.setGroupId(22L);
+    	Assertions.assertThrows(RuntimeException.class, () -> {this.productRepository.update(p);});
+    	Assertions.assertEquals(g.getId(), this.productRepository.getById(p.getId()).get().getGroupId());
+    }
+    
+    @Test
+    public void updateProduct_whenNegativeQuantitySet_thenExceptionThrown() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	int initQuant = p.getQuantity();
+    	this.productRepository.save(p);
+    	p.setQuantity(-2);
+    	Assertions.assertThrows(RuntimeException.class, () -> {this.productRepository.update(p);});
+    	Assertions.assertEquals(initQuant, this.productRepository.getById(p.getId()).get().getQuantity());
+    }
+    
+    @Test
+    public void deleteProductById_whenProductExists_thenDeleted() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	this.productRepository.save(p);
+    	boolean res = this.productRepository.delete(p.getId());
+    	Assertions.assertTrue(res);
+    	Assertions.assertTrue(this.productRepository.getAll().isEmpty());
+    }
+    
+    @Test
+    public void deleteProductById_whenProductDoesntExist_thenResultIsFalse() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	this.productRepository.save(p);
+    	boolean res = this.productRepository.delete(22L);
+    	Assertions.assertFalse(res);
+    	Assertions.assertTrue(this.productRepository.getAll().size() == 1);
+    }
+    
+    @Test
+    public void deleteProductsOfGroup_whenGroupExists_thenDeleted() {
+    	Group g = new Group(1L, "g1", "d1");
+    	Group g2 = new Group(2L, "g2", "d1");
+    	this.groupRepository.save(g);
+    	this.groupRepository.save(g2);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	Product p2 = new Product("Product2", "D1", "Pr1", 34, 23.1, g.getId());
+    	Product p3 = new Product("Product3", "D1", "Pr1", 34, 23.1, g2.getId());
+    	this.productRepository.save(p);
+    	this.productRepository.save(p2);
+    	this.productRepository.save(p3);
+    	boolean res = this.productRepository.deleteOfGroup(g.getId());
+    	Assertions.assertTrue(res);
+    	Assertions.assertTrue(this.productRepository.getAll().size() == 1);
+    }
+    
+    @Test
+    public void deleteProductsOfGroup_whenGroupDoesntExist_thenResultIsFalse() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	this.productRepository.save(p);
+    	boolean res = this.productRepository.deleteOfGroup(22L);
+    	Assertions.assertFalse(res);
+    	Assertions.assertFalse(this.productRepository.getAll().isEmpty());
+    }
+    
+    @Test
+    public void deleteProductByName_whenProductExists_thenDeleted() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	Product p2 = new Product("Product2", "D1", "Pr1", 34, 23.1, g.getId());
+    	this.productRepository.save(p);
+    	this.productRepository.save(p2);
+    	boolean res = this.productRepository.deleteByName(p.getName());
+    	Assertions.assertTrue(res);
+    	Assertions.assertTrue(this.productRepository.getAll().size() == 1);
+    }
+    
+    @Test
+    public void deleteProductByName_whenProductWithSuchNameDoesntExist_thenResultIsFalse() {
+    	Group g = new Group(1L, "g1", "d1");
+    	this.groupRepository.save(g);
+    	Product p = new Product("Product", "D1", "Pr1", 34, 23.1, g.getId());
+    	this.productRepository.save(p);
+    	boolean res = this.productRepository.deleteByName("test");
+    	Assertions.assertFalse(res);
+    	Assertions.assertFalse(this.productRepository.getAll().isEmpty());
+    }
+    
+    
 
 
 }

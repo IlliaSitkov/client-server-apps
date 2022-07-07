@@ -1,11 +1,11 @@
 package repository.group;
 
-import exceptions.GroupNotFoundException;
 import model.Group;
 import utils.Utils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class GroupRepositoryFakeImpl implements GroupRepository {
 
@@ -44,20 +44,21 @@ public class GroupRepositoryFakeImpl implements GroupRepository {
     }
 
     @Override
-    public Group update(Group g) {
+    public Optional<Group> update(Group g) {
         delete(g.getId());
         save(g);
-        return g;
+        return Optional.of(g);
     }
 
     @Override
-    public synchronized void delete(Long id) {
+    public synchronized boolean delete(Long id) {
         groups.removeIf(g -> Objects.equals(g.getId(), id));
+        return true;
     }
 
     @Override
-    public synchronized Group getById(Long id) {
-        return groups.stream().filter(g -> Objects.equals(g.getId(), id)).findFirst().orElseThrow(() -> new GroupNotFoundException(id));
+    public synchronized Optional<Group> getById(Long id) {
+        return groups.stream().filter(g -> Objects.equals(g.getId(), id)).findFirst();
     }
 
     @Override
@@ -79,4 +80,10 @@ public class GroupRepositoryFakeImpl implements GroupRepository {
     public boolean existsWithId(Long id) {
         return groups.stream().anyMatch(g -> g.getId().equals(id));
     }
+
+	@Override
+	public boolean deleteByName(String name) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

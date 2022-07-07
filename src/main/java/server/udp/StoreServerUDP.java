@@ -64,6 +64,8 @@ public class StoreServerUDP implements StoreServer {
     }
 
     public void stop() throws InterruptedException {
+    	if(!isRunning)
+    		return;
         try {
             lock.lock();
             isRunning = false;

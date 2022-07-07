@@ -15,9 +15,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ProductRepositoryImpl extends AbstractRepository implements ProductRepository {
 
@@ -65,18 +65,45 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
     @Override
-    public Product update(Product p) {
-        return null;
+    public Optional<Product> update(Product p) {
+        try {
+        	PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_UPDATE_BY_ID);
+        	st.setString(1, p.getName());
+        	st.setString(2, p.getDescription());
+        	st.setString(3, p.getProducer());
+        	st.setInt(4, p.getQuantity());
+        	st.setDouble(5, p.getPrice());
+        	st.setLong(6, p.getGroupId());
+        	st.setLong(7, p.getId());
+        	int res = st.executeUpdate();
+        	return res > 0 ? Optional.of(p) : Optional.ofNullable(null);
+        } catch(SQLException e) {
+        	throw new SQLExceptionRuntime(e);
+        }
     }
 
     @Override
-    public void delete(Long id) {
-
+    public boolean delete(Long id) {
+    	try {
+			PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_DELETE_BY_ID);
+			st.setLong(1, id);
+			return st.executeUpdate() > 0;
+		} catch (SQLException e) {
+			throw new SQLExceptionRuntime(e);
+		}
     }
 
     @Override
-    public Product getById(Long id) {
-        return null;
+    public Optional<Product> getById(Long id) {
+    	try {
+			PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_FIND_BY_ID);
+			st.setLong(1, id);
+			st.execute();
+			List<Product> list = DBUtils.resultSetToProductList(st.getResultSet());
+			return list.isEmpty() ? Optional.ofNullable(null) : Optional.of(list.get(0));
+		} catch (SQLException e) {
+			throw new SQLExceptionRuntime(e);
+		}
     }
 
     @Override
@@ -92,12 +119,34 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
 
     @Override
     public void deleteAll() {
-
+    	try {
+			Statement st = connection.createStatement();
+			st.executeUpdate(SQLQueries.PRODUCT_DELETE_ALL);
+		} catch (SQLException e) {
+			throw new SQLExceptionRuntime(e);
+		}	
     }
 
     @Override
-    public void deleteOfGroup(Long groupId) {
-
+    public boolean deleteByName(String name) {
+    	try {
+    		PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_DELETE_BY_NAME);
+			st.setString(1, name);
+			return st.executeUpdate() > 0;
+		} catch (SQLException e) {
+			throw new SQLExceptionRuntime(e);
+		}
+    }
+    
+    @Override
+    public boolean deleteOfGroup(Long groupId) {
+    	try {
+    		PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_DELETE_BY_GROUP_ID);
+			st.setLong(1, groupId);
+			return st.executeUpdate() > 0;
+		} catch (SQLException e) {
+			throw new SQLExceptionRuntime(e);
+		}
     }
 
     @Override
@@ -173,6 +222,5 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
         }
         return SQLQueries.PRODUCT_ORDER_BY_BASE + String.join(",", sortStrings)+";";
     }
-
-
+    
 }

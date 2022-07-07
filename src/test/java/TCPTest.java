@@ -11,19 +11,19 @@ import org.junit.jupiter.api.Test;
 
 import message.Message;
 import packet.Packet;
+import processing.Mediator;
 import server.tcp.StoreClientTCP;
-import server.tcp.StoreServerTCP;
 import utils.Utils;
 
 public class TCPTest {
 	
-	private static StoreServerTCP server;
+	private static Mediator mediator;
 	
 	
 	@BeforeAll
 	public static void startServer() throws IOException {
-		server = new StoreServerTCP();
-		server.start();
+		mediator = Mediator.getInstance();
+		mediator.startTCPServer();
 	}
 	
 	@Test
@@ -60,7 +60,7 @@ public class TCPTest {
 			byte[] arr = new byte[1];
 			arr[0] = 101;
 			client.send(arr);
-			server.stop();
+			mediator.stopTCPServer();
 			Utils.sleep(100);
 			Assertions.assertThrows(RuntimeException.class, () -> {
 				client.fetch(new Packet((byte)132, Utils.generateId(), new Message(8,8,"{\"result\":\"Foo\"}")));
@@ -74,7 +74,7 @@ public class TCPTest {
 	
 	@AfterAll
     public static void stopServer() throws IOException, InterruptedException {
-        server.stop();
+        mediator.terminateAll();
     }
 	
 }

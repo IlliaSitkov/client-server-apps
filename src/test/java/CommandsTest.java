@@ -541,7 +541,7 @@ public class CommandsTest {
     	exec.shutdown();
     	exec.awaitTermination(500, TimeUnit.MILLISECONDS);
     	Utils.sleep(100);
-    	int resultingQuantity = this.productRepository.getById(p1.getId()).getQuantity();
+    	int resultingQuantity = this.productRepository.getById(p1.getId()).get().getQuantity();
     	Assertions.assertEquals(initialQuantity - quantityToRemove * threadNumber, resultingQuantity);
     }
     
@@ -569,7 +569,7 @@ public class CommandsTest {
     	exec.shutdown();
     	exec.awaitTermination(500, TimeUnit.MILLISECONDS);
     	Utils.sleep(100);
-    	int resultingQuantity = this.productRepository.getById(p1.getId()).getQuantity();
+    	int resultingQuantity = this.productRepository.getById(p1.getId()).get().getQuantity();
     	Assertions.assertEquals(initialQuantity + quantityToAdd * threadNumber, resultingQuantity);
     }
     
@@ -608,7 +608,7 @@ public class CommandsTest {
     	exec.shutdown();
     	exec.awaitTermination(500, TimeUnit.MILLISECONDS);
     	Utils.sleep(100);
-    	Assertions.assertEquals(initialQuantity, this.productRepository.getById(p1.getId()).getQuantity());
+    	Assertions.assertEquals(initialQuantity, this.productRepository.getById(p1.getId()).get().getQuantity());
     }
     
     @Test
@@ -636,7 +636,7 @@ public class CommandsTest {
     	exec.shutdown();
     	exec.awaitTermination(500, TimeUnit.MILLISECONDS);
     	Utils.sleep(100);
-    	Assertions.assertEquals(0, this.productRepository.getById(p1.getId()).getQuantity());
+    	Assertions.assertEquals(0, this.productRepository.getById(p1.getId()).get().getQuantity());
     }
     
     

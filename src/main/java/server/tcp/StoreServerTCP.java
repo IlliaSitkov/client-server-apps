@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import exceptions.ServerAlreadyStoppedException;
+import processing.Mediator;
 
 public class StoreServerTCP {
 
@@ -29,6 +30,8 @@ public class StoreServerTCP {
 	
 	private volatile boolean isRunning;
 	
+	private Mediator mediator;
+	
 	static {
         try {
             DEFAULT_SERVER_ADDRESS = InetAddress.getByName("localhost");
@@ -37,11 +40,12 @@ public class StoreServerTCP {
         }
     }
 	
-	public StoreServerTCP() throws IOException {
+	public StoreServerTCP(Mediator mediator) throws IOException {
 		this.serverSocket = new ServerSocket(DEFAULT_SERVER_TCP_PORT);
 		this.serverSocket.setSoTimeout(RECEIVE_TIMEOUT);
 		this.clientService = Executors.newFixedThreadPool(USER_THREADS_NUMBER);
 		this.isRunning = false;
+		this.mediator = mediator;
 	}
 	
 	public synchronized void start() {
@@ -54,7 +58,7 @@ public class StoreServerTCP {
 		this.executionThread = new Thread(() -> {
 			while(this.isRunning) {
 				try {
-					this.clientService.execute(new TCPClientHandler(this.serverSocket.accept()));
+					this.clientService.execute(new TCPClientHandler(this.serverSocket.accept(), this.mediator));
 				} catch(SocketTimeoutException e) {
 					System.out.println(e.getMessage());
 					continue;

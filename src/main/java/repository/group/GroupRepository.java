@@ -3,16 +3,19 @@ package repository.group;
 import model.Group;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface GroupRepository {
 
     Group save(Group g);
 
-    Group update(Group g);
+    Optional<Group> update(Group g);
 
-    void delete(Long id);
-
-    Group getById(Long id);
+    boolean delete(Long id);
+    
+    boolean deleteByName(String name);
+    
+    Optional<Group> getById(Long id);
 
     List<Group> getAll();
 

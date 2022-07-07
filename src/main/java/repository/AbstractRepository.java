@@ -2,20 +2,17 @@ package repository;
 
 import exceptions.SQLExceptionRuntime;
 import utils.DBUtils;
+import utils.SQLQueries;
 
 import java.sql.*;
 
 public abstract class AbstractRepository {
-
-
-
+	
     protected static Connection connection;
-
 
     protected AbstractRepository(String initTableStatement, String databaseName) {
         init(initTableStatement, databaseName);
     }
-
 
 
     private void init(String initTableStatement, String databaseName) {
@@ -23,6 +20,7 @@ public abstract class AbstractRepository {
             connection = DBUtils.getDBConnection(databaseName);
             PreparedStatement st = connection.prepareStatement(initTableStatement);
             st.executeUpdate();
+            //this.enableFKs();
         }catch(ClassNotFoundException e){
             System.out.println("Could not find JDBC driver");
             e.printStackTrace();
@@ -34,8 +32,7 @@ public abstract class AbstractRepository {
         }
     }
 
-
-
+    
     protected boolean existsWithName(String name, String findAllByNameQuery) {
         try{
             PreparedStatement st = connection.prepareStatement(findAllByNameQuery);
@@ -68,10 +65,10 @@ public abstract class AbstractRepository {
             throw new SQLExceptionRuntime(e);
         }
     }
-
-
-
-
-
-
+    
+    private void enableFKs() throws SQLException {
+    	Statement st = connection.createStatement();
+		st.executeUpdate(SQLQueries.ENABLE_FOREIGN_KEYS);
+		st.close();
+    }
 }

@@ -1,10 +1,12 @@
 package model;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import utils.Utils;
 
 @Getter
+@EqualsAndHashCode
 public class Group {
 
     private final Long id;

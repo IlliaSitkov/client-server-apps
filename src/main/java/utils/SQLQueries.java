@@ -21,17 +21,27 @@ public class SQLQueries {
             "SELECT *\n" +
             "FROM groups\n" +
             "WHERE lower(group_name) LIKE lower(?);";
-
-    public static final String GROUP_FIND_ALL_BY_ID =
-            "SELECT *\n" +
-            "FROM groups\n" +
-            "WHERE group_id = ?;";
-
+    
+    public static final String GROUPS_FIND_ALL =
+    		"SELECT * FROM groups;";
+    
     public static final String GROUPS_DELETE_ALL =
-            ENABLE_FOREIGN_KEYS+"DELETE FROM groups;";
+            ENABLE_FOREIGN_KEYS + "DELETE FROM groups;";
 
-
-
+    public static final String GROUP_FIND_BY_ID = 
+    		"SELECT * FROM groups WHERE group_id = ?;";
+    
+    public static final String GROUP_UPDATE_BY_ID = 
+    		"UPDATE groups SET group_name = ?, \n"
+    		+ "group_description = ? \n"
+    		+ "WHERE group_id = ?;";
+    
+    public static final String GROUP_DELETE_BY_ID =
+    		"DELETE FROM groups WHERE group_id = ?;";
+    
+    public static final String GROUP_DELETE_BY_NAME = 
+    		"DELETE FROM groups WHERE lower(group_name) = lower(?);";
+    
     /////////////////////////////////////////////////////////////////////////////////
 
 
@@ -72,5 +82,30 @@ public class SQLQueries {
             "SELECT *\n" +
             "FROM products\n" +
             "ORDER BY ";
+    
+    public static final String PRODUCT_FIND_BY_ID = 
+    		"SELECT * FROM products WHERE product_id = ?;";
+    
+    public static final String PRODUCT_DELETE_BY_ID =
+    		"DELETE FROM products WHERE product_id = ?;";
+    
+    public static final String PRODUCT_DELETE_BY_NAME =
+    		"DELETE FROM products WHERE lower(product_name) = lower(?);";
+    
+    public static final String PRODUCT_DELETE_ALL = 
+    		"DELETE FROM products";
+    
+    public static final String PRODUCT_DELETE_BY_GROUP_ID =
+    		"DELETE FROM products WHERE group_id = ?;";
+    
+    public static final String PRODUCT_UPDATE_BY_ID = 
+    		"UPDATE products SET \n"
+    		+ "product_name = ?, \n" 
+    		+ "product_description = ?, \n"
+    		+ "product_producer = ?, \n"
+    		+ "product_quantity = ?, \n"
+    		+ "product_price = ?, \n"
+    		+ "group_id = ? \n"
+    		+ "WHERE product_id = ?;";
 
 }
