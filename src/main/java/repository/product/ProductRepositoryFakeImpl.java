@@ -98,7 +98,7 @@ public class ProductRepositoryFakeImpl implements ProductRepository {
     }
 
     @Override
-    public List<Product> findByCriteria(Map<FilterCriteria, Object> criteria) {
+    public List<Product> filterByCriteria(Map<FilterCriteria, Object> criteria) {
         return null;
     }
 

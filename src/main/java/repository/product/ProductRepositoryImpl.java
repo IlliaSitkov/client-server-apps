@@ -1,5 +1,6 @@
 package repository.product;
 
+import exceptions.ProductNotFoundException;
 import exceptions.SQLExceptionRuntime;
 import model.Product;
 import org.hibernate.Session;
@@ -84,6 +85,9 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
 
     @Override
     public boolean delete(Long id) {
+        if (!existsWithId(id)) {
+            throw new ProductNotFoundException(id);
+        }
     	try {
 			PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_DELETE_BY_ID);
 			st.setLong(1, id);
@@ -160,7 +164,7 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
     @Override
-    public synchronized List<Product> findByCriteria(Map<FilterCriteria, Object> criteria) {
+    public synchronized List<Product> filterByCriteria(Map<FilterCriteria, Object> criteria) {
         Session session = HibernateUtil.getHibernateSession();
         CriteriaBuilder cb = session.getCriteriaBuilder();
         CriteriaQuery<Product> cr = cb.createQuery(Product.class);

@@ -146,7 +146,7 @@ public class ProductServiceTest {
         int nThreads = 5;
 
         ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
-        executorService.execute(() -> productService.updateProduct(p.getId(),"New Name", "NewDesc", "prod", 12,12,g.getId()));
+        executorService.execute(() -> productService.updateProduct(p.getId(),"New Name", "NewDesc", "prod", 12,g.getId()));
         for (int i = 0; i < times; i++) {
             executorService.execute(() -> {
                 try {

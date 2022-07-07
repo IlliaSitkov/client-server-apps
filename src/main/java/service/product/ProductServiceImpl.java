@@ -2,14 +2,18 @@ package service.product;
 
 import exceptions.InsufficientQuantityException;
 import exceptions.NameNotUniqueException;
+import exceptions.ProductNotFoundException;
 import model.Product;
 import repository.product.ProductRepository;
-import repository.product.ProductRepositoryFakeImpl;
+import repository.product.ProductRepositoryImpl;
 import service.group.GroupService;
 import service.group.GroupServiceImpl;
+import utils.FilterCriteria;
 import utils.Utils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ProductServiceImpl implements ProductService {
 
@@ -19,7 +23,7 @@ public class ProductServiceImpl implements ProductService {
     private final GroupService groupService;
 
     private ProductServiceImpl() {
-        this.productRepository = ProductRepositoryFakeImpl.getInstance();
+        this.productRepository = ProductRepositoryImpl.getInstance();
         this.groupService = GroupServiceImpl.getInstance();
     }
 
@@ -50,19 +54,18 @@ public class ProductServiceImpl implements ProductService {
 
     // TODO Should quantity, price be allowed to be updated?
     @Override
-    public synchronized Product updateProduct(Long productId, String name, String description, String producer, int quantity, double price, long groupId) {
+    public synchronized Product updateProduct(Long productId, String name, String description, String producer, double price, long groupId) {
         synchronized (groupService) {
+            Product product = getProductById(productId);
             String pName = Utils.processString(name);
             String pDescription = Utils.processString(description);
             String pProducer = Utils.processString(producer);
-            validateParams(quantity, price, groupId, pName, pDescription, pProducer);
-            Product product = getProductById(productId);
+            validateParams(product.getQuantity(), price, groupId, pName, pDescription, pProducer);
             product.setName(pName);
             product.setDescription(description);
-            product.setQuantity(quantity);
             product.setPrice(price);
             product.setGroupId(groupId);
-            return productRepository.update(product).get();
+            return productRepository.update(product).orElseThrow(() -> new ProductNotFoundException(productId));
         }
     }
 
@@ -73,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public synchronized Product getProductById(Long productId) {
-        return productRepository.getById(productId).get();
+        return productRepository.getById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
     }
 
     @Override
@@ -116,6 +119,19 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public synchronized void deleteAllProducts() {
         productRepository.deleteAll();
+    }
+
+    @Override
+    public List<Product> getFilteredProducts(String queryString) {
+        if (queryString == null) {
+            return getAllProducts();
+        }
+        Map<FilterCriteria, Object> map = new HashMap<>();
+        for (String string: queryString.split("&")) {
+            String[] keyValue = string.split("=");
+            map.put(FilterCriteria.getValue(keyValue[0]), keyValue[1]);
+        }
+        return productRepository.filterByCriteria(map);
     }
 
     private void validateNameIsUnique(String name) {

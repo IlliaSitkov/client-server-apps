@@ -143,8 +143,8 @@ public class ProductRepositoryTest {
             productRepository.save(p);
         }
 
-        Assertions.assertEquals(times, productRepository.findByCriteria(Map.of(FilterCriteria.MIN_QUANTITY, 0, FilterCriteria.MAX_QUANTITY, times)).size());
-        Assertions.assertEquals(times/2, productRepository.findByCriteria(Map.of(FilterCriteria.MIN_QUANTITY, times/2, FilterCriteria.MAX_QUANTITY, times)).size());
+        Assertions.assertEquals(times, productRepository.filterByCriteria(Map.of(FilterCriteria.MIN_QUANTITY, 0, FilterCriteria.MAX_QUANTITY, times)).size());
+        Assertions.assertEquals(times/2, productRepository.filterByCriteria(Map.of(FilterCriteria.MIN_QUANTITY, times/2, FilterCriteria.MAX_QUANTITY, times)).size());
     }
 
     @Test
@@ -161,7 +161,7 @@ public class ProductRepositoryTest {
         productRepository.save(p2);
         productRepository.save(p3);
 
-        Assertions.assertEquals(3, productRepository.findByCriteria(Map.of(FilterCriteria.SEARCH_STRING, "prod")).size());
+        Assertions.assertEquals(3, productRepository.filterByCriteria(Map.of(FilterCriteria.SEARCH_STRING, "prod")).size());
     }
 
 
@@ -181,7 +181,7 @@ public class ProductRepositoryTest {
         productRepository.save(p3);
         productRepository.save(p4);
 
-        Assertions.assertEquals(3, productRepository.findByCriteria(Map.of(FilterCriteria.MIN_PRICE, 23.1, FilterCriteria.MAX_PRICE, 105.5)).size());
+        Assertions.assertEquals(3, productRepository.filterByCriteria(Map.of(FilterCriteria.MIN_PRICE, 23.1, FilterCriteria.MAX_PRICE, 105.5)).size());
     }
 
 
@@ -203,9 +203,9 @@ public class ProductRepositoryTest {
         productRepository.save(p3);
         productRepository.save(p4);
 
-        productRepository.findByCriteria(Map.of(FilterCriteria.GROUP_ID, 1L)).forEach(System.out::println);
+        productRepository.filterByCriteria(Map.of(FilterCriteria.GROUP_ID, 1L)).forEach(System.out::println);
 
-        Assertions.assertEquals(4, productRepository.findByCriteria(Map.of(FilterCriteria.GROUP_ID, 1L)).size());
+        Assertions.assertEquals(4, productRepository.filterByCriteria(Map.of(FilterCriteria.GROUP_ID, 1L)).size());
     }
 
     @Test
@@ -226,9 +226,9 @@ public class ProductRepositoryTest {
         productRepository.save(p3);
         productRepository.save(p4);
 
-        Assertions.assertEquals(0, productRepository.findByCriteria(Map.of(FilterCriteria.MAX_QUANTITY, -10)).size());
-        Assertions.assertEquals(0, productRepository.findByCriteria(Map.of(FilterCriteria.MAX_PRICE, -10)).size());
-        Assertions.assertEquals(0, productRepository.findByCriteria(Map.of(FilterCriteria.GROUP_ID, -10L)).size());
+        Assertions.assertEquals(0, productRepository.filterByCriteria(Map.of(FilterCriteria.MAX_QUANTITY, -10)).size());
+        Assertions.assertEquals(0, productRepository.filterByCriteria(Map.of(FilterCriteria.MAX_PRICE, -10)).size());
+        Assertions.assertEquals(0, productRepository.filterByCriteria(Map.of(FilterCriteria.GROUP_ID, -10L)).size());
     }
 
 

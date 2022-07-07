@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.Arrays;
+
 public enum FilterCriteria {
     SEARCH_STRING("searchString"),
     MIN_PRICE("minPrice"),
@@ -19,5 +21,10 @@ public enum FilterCriteria {
     public String toString() {
         return value;
     }
+
+    public static FilterCriteria getValue(String name) {
+        return Arrays.stream(values()).filter(criteria -> criteria.value.equals(name)).findFirst().orElseThrow();
+    }
+
 
 }

@@ -33,7 +33,7 @@ public interface ProductRepository {
 
     List<Product> listByCriteria(Map<SortCriteria, SortOrder> sortMap);
 
-    List<Product> findByCriteria(Map<FilterCriteria, Object> criteria);
+    List<Product> filterByCriteria(Map<FilterCriteria, Object> criteria);
 
 
 

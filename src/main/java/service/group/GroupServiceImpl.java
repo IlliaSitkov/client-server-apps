@@ -1,11 +1,12 @@
 package service.group;
 
+import exceptions.GroupNotFoundException;
 import exceptions.NameNotUniqueException;
 import model.Group;
 import repository.group.GroupRepository;
-import repository.group.GroupRepositoryFakeImpl;
+import repository.group.GroupRepositoryImpl;
 import repository.product.ProductRepository;
-import repository.product.ProductRepositoryFakeImpl;
+import repository.product.ProductRepositoryImpl;
 import utils.Utils;
 
 import java.util.List;
@@ -19,8 +20,8 @@ public class GroupServiceImpl implements GroupService{
     private static volatile GroupServiceImpl groupService;
 
     private GroupServiceImpl() {
-        this.groupRepository = GroupRepositoryFakeImpl.getInstance();
-        this.productRepository = ProductRepositoryFakeImpl.getInstance();
+        this.groupRepository = GroupRepositoryImpl.getInstance();
+        this.productRepository = ProductRepositoryImpl.getInstance();
     }
 
     public static GroupServiceImpl getInstance() {
@@ -64,7 +65,7 @@ public class GroupServiceImpl implements GroupService{
 
     @Override
     public synchronized Group getGroupById(Long groupId) {
-        return groupRepository.getById(groupId).get();
+        return groupRepository.getById(groupId).orElseThrow(() -> new GroupNotFoundException(groupId));
     }
 
     @Override

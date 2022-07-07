@@ -1,12 +1,21 @@
 package utils;
 
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
 import exceptions.InvalidNumberException;
 import exceptions.InvalidStringException;
+import exceptions.PathVariableNotFound;
+import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Utils {
 
@@ -60,14 +69,54 @@ public class Utils {
 
 
     public static boolean exactURI(String uri, String expectedURI) {
-        return uri.matches(expectedURI+"$");
+        return uri.matches(expectedURI+"((/?$)|(/\\?.*)?)");
     }
 
 
     public static long getIdFromPath(String path, String basePath) {
-        String[] strings = path.split(basePath);
-        return Long.parseLong(strings[1]);
+        Pattern pattern = Pattern.compile(basePath+"/(\\d+)/?$");
+        Matcher matcher = pattern.matcher(path);
+        if (matcher.matches()) {
+            String match = matcher.group(1);
+            return Long.parseLong(match);
+        }
+        throw new PathVariableNotFound(path);
     }
+
+    public static byte[] getResponseBytes(String key, Object value) {
+        JSONObject object = new JSONObject();
+        object.put(key, value);
+        return object.toString().getBytes();
+    }
+
+
+    public static void sendResponse(HttpExchange exchange, byte[] bytes, int responseCode) throws IOException {
+        Headers responseHeaders = exchange.getResponseHeaders();
+        responseHeaders.add("Content-Type","application/json");
+
+        exchange.sendResponseHeaders(responseCode, bytes.length);
+        OutputStream outputStream = exchange.getResponseBody();
+
+        outputStream.write(bytes);
+        outputStream.close();
+    }
+
+    public static void sendResponseNoContent(HttpExchange exchange, int responseCode) throws IOException {
+        exchange.sendResponseHeaders(responseCode, 0);
+    }
+
+    public static JSONObject getRequestBody(HttpExchange exchange) throws IOException {
+        Headers headers = exchange.getRequestHeaders();
+        int contentLength = Integer.parseInt(headers.getFirst("Content-length"));
+        if (contentLength == 0) {
+            return new JSONObject();
+        }
+        InputStream inputStream = exchange.getRequestBody();
+        byte[] bodyBytes = new byte[contentLength];
+        inputStream.read(bodyBytes);
+        return new JSONObject(new String(bodyBytes));
+    }
+
 
 
 

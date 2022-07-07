@@ -8,7 +8,7 @@ public interface ProductService {
 
     Product createProduct(String name, String description, String producer, int quantity, double price, long groupId);
 
-    Product updateProduct(Long productId, String name, String description, String producer, int quantity, double price, long groupId);
+    Product updateProduct(Long productId, String name, String description, String producer, double price, long groupId);
 
     void deleteProduct(Long productId);
 
@@ -25,5 +25,7 @@ public interface ProductService {
     void setProductPrice(Long productId, double price);
 
     void deleteAllProducts();
+
+    List<Product> getFilteredProducts(String queryString);
 
 }
