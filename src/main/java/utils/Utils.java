@@ -59,6 +59,16 @@ public class Utils {
     }
 
 
+    public static boolean exactURI(String uri, String expectedURI) {
+        return uri.matches(expectedURI+"$");
+    }
+
+
+    public static long getIdFromPath(String path, String basePath) {
+        String[] strings = path.split(basePath);
+        return Long.parseLong(strings[1]);
+    }
+
 
 
 
