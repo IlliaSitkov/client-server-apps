@@ -39,7 +39,7 @@ public class SimpleHttpServer {
 
 
     public static void main(String[] args) throws Exception {
-
+        SimpleHttpServer httpServer = new SimpleHttpServer();
     }
 
 }

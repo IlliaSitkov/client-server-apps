@@ -179,11 +179,11 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
                     ));
         }
         if (criteria.containsKey(FilterCriteria.MIN_QUANTITY)) {
-            int minQuant = (int) criteria.get(FilterCriteria.MIN_QUANTITY);
+            int minQuant = Integer.parseInt((String) criteria.get(FilterCriteria.MIN_QUANTITY));
             predicates.add(cb.ge(root.get("quantity"), minQuant));
         }
         if (criteria.containsKey(FilterCriteria.MAX_QUANTITY)) {
-            int maxQuant = (int) criteria.get(FilterCriteria.MAX_QUANTITY);
+            int maxQuant = Integer.parseInt((String) criteria.get(FilterCriteria.MAX_QUANTITY));
             predicates.add(cb.le(root.get("quantity"), maxQuant));
         }
         if (criteria.containsKey(FilterCriteria.MIN_PRICE)) {
@@ -195,11 +195,11 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
             predicates.add(cb.le(root.get("price"), maxPrice));
         }
         if (criteria.containsKey(FilterCriteria.GROUP_ID)) {
-            long groupId = (long) criteria.get(FilterCriteria.GROUP_ID);
+            long groupId = Long.parseLong(criteria.get(FilterCriteria.GROUP_ID).toString());
             predicates.add(cb.equal(root.get("groupId"), groupId));
         }
 
-        cr.select(root).where(cb.and(predicates.toArray(new Predicate[0])));
+        cr.select(root).where(cb.and(predicates.toArray(new Predicate[0]))).orderBy(cb.asc(root.get("name")));
 
         Query<Product> query = session.createQuery(cr);
         return query.getResultList();

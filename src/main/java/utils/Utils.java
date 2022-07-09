@@ -93,6 +93,13 @@ public class Utils {
     public static void sendResponse(HttpExchange exchange, byte[] bytes, int responseCode) throws IOException {
         Headers responseHeaders = exchange.getResponseHeaders();
         responseHeaders.add("Content-Type","application/json");
+        responseHeaders.add("Access-Control-Allow-Origin", "*");
+        if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+            responseHeaders.add("Access-Control-Allow-Methods", "GET, OPTIONS");
+            responseHeaders.add("Access-Control-Allow-Headers", "Content-Type,Authorization");
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
 
         exchange.sendResponseHeaders(responseCode, bytes.length);
         OutputStream outputStream = exchange.getResponseBody();

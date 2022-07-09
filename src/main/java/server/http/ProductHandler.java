@@ -1,5 +1,6 @@
 package server.http;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import exceptions.*;
@@ -36,13 +37,28 @@ public class ProductHandler implements HttpHandler {
                 case "PATCH":
                     handlePatch(exchange);
                     break;
+                case "OPTIONS":
+                    handleOptions(exchange);
+                    break;
                 default:
+                    System.out.println(exchange.getRequestMethod());
+                    System.out.println("Method not supported");
                     throw new RuntimeException("Method not supported");
             }
         } catch (Exception e) {
             e.printStackTrace();
             byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
             Utils.sendResponse(exchange, bytes, 400);
+        }
+    }
+
+    private void handleOptions(HttpExchange exchange) throws IOException {
+        Headers responseHeaders = exchange.getResponseHeaders();
+        responseHeaders.add("Access-Control-Allow-Origin", "*");
+        if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+            responseHeaders.add("Access-Control-Allow-Methods", "GET, OPTIONS");
+            responseHeaders.add("Access-Control-Allow-Headers", "Content-Type,Authorization");
+            exchange.sendResponseHeaders(204, -1);
         }
     }
 

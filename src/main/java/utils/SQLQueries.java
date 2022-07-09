@@ -76,7 +76,10 @@ public class SQLQueries {
 
     public static final String PRODUCT_GET_ALL =
             "SELECT *\n" +
-            "FROM products;\n";
+            "FROM products " +
+            "ORDER BY product_name;\n";
+
+    public static final String PRODUCT_ORDER_BY_NAME = " ORDER BY product_name ";
 
     public static final String PRODUCT_ORDER_BY_BASE =
             "SELECT *\n" +
