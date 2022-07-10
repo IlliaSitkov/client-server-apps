@@ -45,6 +45,28 @@ public abstract class AbstractRepository {
         }
     }
 
+    protected boolean existsWithNameAndNotId(String name, Long id, String idColName, String findAllByNameQuery) {
+        try{
+            PreparedStatement st = connection.prepareStatement(findAllByNameQuery);
+            st.setString(1, name.toLowerCase());
+            st.execute();
+            ResultSet set = st.getResultSet();
+            int count = 0;
+            boolean match = false;
+            while (set.next()) {
+                count++;
+                if (set.getLong(idColName) == id) {
+                    match = true;
+                }
+            }
+            return count != 0 && (count != 1 || !match);
+        } catch (SQLException e){
+            throw new SQLExceptionRuntime(e);
+        }
+    }
+
+
+
     protected boolean existsWithId(Long id, String findAllByIdQuery) {
         try{
             PreparedStatement st = connection.prepareStatement(findAllByIdQuery);

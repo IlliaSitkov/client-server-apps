@@ -159,43 +159,49 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
     @Override
+    public synchronized boolean existsWithNameAndNotId(String name, Long id) {
+        return existsWithNameAndNotId(name, id, "product_id", SQLQueries.PRODUCT_FIND_ALL_BY_NAME);
+    }
+
+    @Override
     public synchronized boolean existsWithId(Long id) {
         return existsWithId(id, SQLQueries.PRODUCT_FIND_ALL_BY_ID);
     }
 
     @Override
-    public synchronized List<Product> filterByCriteria(Map<FilterCriteria, Object> criteria) {
+    public synchronized List<Product> filterByCriteria(Map<FilterCriteria, Object> criteriaMap) {
         Session session = HibernateUtil.getHibernateSession();
         CriteriaBuilder cb = session.getCriteriaBuilder();
         CriteriaQuery<Product> cr = cb.createQuery(Product.class);
         Root<Product> root = cr.from(Product.class);
         List<Predicate> predicates = new ArrayList<>();
-        if (criteria.containsKey(FilterCriteria.SEARCH_STRING)) {
-            String str = ((String) criteria.get(FilterCriteria.SEARCH_STRING)).toLowerCase();
+        if (criteriaMap.containsKey(FilterCriteria.SEARCH_STRING)) {
+            String str = Utils.processString((String) criteriaMap.get(FilterCriteria.SEARCH_STRING)).toLowerCase();
+            String likeStr = "%" + str + "%";
             predicates.add(cb.or(
-                    cb.like(cb.lower(root.get("name")), "%"+str+"%"),
-                    cb.like(cb.lower(root.get("description")), "%"+str+"%"),
-                    cb.like(cb.lower(root.get("producer")), "%"+str+"%")
+                    cb.like(cb.lower(root.get("name")), likeStr),
+                    cb.like(cb.lower(root.get("description")), likeStr),
+                    cb.like(cb.lower(root.get("producer")), likeStr)
                     ));
         }
-        if (criteria.containsKey(FilterCriteria.MIN_QUANTITY)) {
-            int minQuant = Integer.parseInt((String) criteria.get(FilterCriteria.MIN_QUANTITY));
+        if (criteriaMap.containsKey(FilterCriteria.MIN_QUANTITY)) {
+            int minQuant = Integer.parseInt((String) criteriaMap.get(FilterCriteria.MIN_QUANTITY));
             predicates.add(cb.ge(root.get("quantity"), minQuant));
         }
-        if (criteria.containsKey(FilterCriteria.MAX_QUANTITY)) {
-            int maxQuant = Integer.parseInt((String) criteria.get(FilterCriteria.MAX_QUANTITY));
+        if (criteriaMap.containsKey(FilterCriteria.MAX_QUANTITY)) {
+            int maxQuant = Integer.parseInt((String) criteriaMap.get(FilterCriteria.MAX_QUANTITY));
             predicates.add(cb.le(root.get("quantity"), maxQuant));
         }
-        if (criteria.containsKey(FilterCriteria.MIN_PRICE)) {
-            double minPrice = Double.parseDouble(criteria.get(FilterCriteria.MIN_PRICE).toString());
+        if (criteriaMap.containsKey(FilterCriteria.MIN_PRICE)) {
+            double minPrice = Double.parseDouble(criteriaMap.get(FilterCriteria.MIN_PRICE).toString());
             predicates.add(cb.ge(root.get("price"), minPrice));
         }
-        if (criteria.containsKey(FilterCriteria.MAX_PRICE)) {
-            double maxPrice = Double.parseDouble(criteria.get(FilterCriteria.MAX_PRICE).toString());
+        if (criteriaMap.containsKey(FilterCriteria.MAX_PRICE)) {
+            double maxPrice = Double.parseDouble(criteriaMap.get(FilterCriteria.MAX_PRICE).toString());
             predicates.add(cb.le(root.get("price"), maxPrice));
         }
-        if (criteria.containsKey(FilterCriteria.GROUP_ID)) {
-            long groupId = Long.parseLong(criteria.get(FilterCriteria.GROUP_ID).toString());
+        if (criteriaMap.containsKey(FilterCriteria.GROUP_ID)) {
+            long groupId = Long.parseLong(criteriaMap.get(FilterCriteria.GROUP_ID).toString());
             predicates.add(cb.equal(root.get("groupId"), groupId));
         }
 

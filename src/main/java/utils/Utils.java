@@ -109,6 +109,8 @@ public class Utils {
     }
 
     public static void sendResponseNoContent(HttpExchange exchange, int responseCode) throws IOException {
+        Headers responseHeaders = exchange.getResponseHeaders();
+        responseHeaders.add("Access-Control-Allow-Origin", "*");
         exchange.sendResponseHeaders(responseCode, 0);
     }
 

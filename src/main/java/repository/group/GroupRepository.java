@@ -23,6 +23,8 @@ public interface GroupRepository {
 
     boolean existsWithName(String name);
 
+    boolean existsWithNameAndNotId(String name, Long id);
+
     boolean existsWithId(Long id);
 
 

@@ -102,7 +102,12 @@ public class ProductRepositoryFakeImpl implements ProductRepository {
         return null;
     }
 
-	@Override
+    @Override
+    public boolean existsWithNameAndNotId(String name, Long id) {
+        return false;
+    }
+
+    @Override
 	public boolean deleteByName(String name) {
 		// TODO Auto-generated method stub
 		return true;

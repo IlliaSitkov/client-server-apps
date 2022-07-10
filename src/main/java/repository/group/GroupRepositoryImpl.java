@@ -126,6 +126,11 @@ public class GroupRepositoryImpl  extends AbstractRepository implements GroupRep
     }
 
     @Override
+    public synchronized boolean existsWithNameAndNotId(String name, Long id) {
+        return existsWithNameAndNotId(name, id, "group_id", SQLQueries.GROUP_FIND_ALL_BY_NAME);
+    }
+
+    @Override
     public synchronized boolean existsWithId(Long id) {
         return existsWithId(id, SQLQueries.GROUP_FIND_BY_ID);
     }

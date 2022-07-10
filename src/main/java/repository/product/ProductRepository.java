@@ -36,6 +36,5 @@ public interface ProductRepository {
     List<Product> filterByCriteria(Map<FilterCriteria, Object> criteria);
 
 
-
-
+    boolean existsWithNameAndNotId(String name, Long id);
 }

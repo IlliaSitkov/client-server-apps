@@ -46,6 +46,7 @@ public class ProductServiceImpl implements ProductService {
             String pName = Utils.processString(name);
             String pDescription = Utils.processString(description);
             String pProducer = Utils.processString(producer);
+            validateNameIsUnique(pName);
             validateParams(quantity, price, groupId, pName, pDescription, pProducer);
             Product p = new Product(pName, pDescription, pProducer, quantity, price, groupId);
             return productRepository.save(p);
@@ -60,9 +61,11 @@ public class ProductServiceImpl implements ProductService {
             String pName = Utils.processString(name);
             String pDescription = Utils.processString(description);
             String pProducer = Utils.processString(producer);
+            validateNameIsUniqueRegardingId(pName, productId);
             validateParams(product.getQuantity(), price, groupId, pName, pDescription, pProducer);
             product.setName(pName);
-            product.setDescription(description);
+            product.setDescription(pDescription);
+            product.setProducer(pProducer);
             product.setPrice(price);
             product.setGroupId(groupId);
             return productRepository.update(product).orElseThrow(() -> new ProductNotFoundException(productId));
@@ -126,9 +129,11 @@ public class ProductServiceImpl implements ProductService {
         if (queryString == null) {
             return getAllProducts();
         }
+        System.out.println("Query string = '"+queryString+"'");
         Map<FilterCriteria, Object> map = new HashMap<>();
         for (String string: queryString.split("&")) {
             String[] keyValue = string.split("=");
+            if (keyValue.length != 2) continue;
             map.put(FilterCriteria.getValue(keyValue[0]), keyValue[1]);
         }
         return productRepository.filterByCriteria(map);
@@ -140,8 +145,13 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    private void validateNameIsUniqueRegardingId(String name, Long id) {
+        if (productRepository.existsWithNameAndNotId(name, id)) {
+            throw new NameNotUniqueException(name);
+        }
+    }
+
     private void validateParams(int quantity, double price, long groupId, String pName, String pDescription, String pProducer) {
-        validateNameIsUnique(pName);
         Utils.validateNumber(quantity);
         Utils.validateNumber(price);
         Utils.validateString(pName, true, 100);

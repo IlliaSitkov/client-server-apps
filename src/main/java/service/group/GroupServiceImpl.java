@@ -41,6 +41,7 @@ public class GroupServiceImpl implements GroupService{
     public synchronized Group createGroup(String name, String description) {
         String pName = Utils.processString(name);
         String pDescription = Utils.processString(description);
+        validateNameIsUnique(pName);
         validateParams(pName, pDescription);
         Group g = new Group(pName, pDescription);
         return groupRepository.save(g);
@@ -50,6 +51,7 @@ public class GroupServiceImpl implements GroupService{
     public synchronized Group updateGroup(Long groupId, String name, String description) {
         String pName = Utils.processString(name);
         String pDescription = Utils.processString(description);
+        validateNameIsUniqueRegardingId(pName, groupId);
         validateParams(pName, pDescription);
         Group group = getGroupById(groupId);
         group.setDescription(pDescription);
@@ -85,8 +87,13 @@ public class GroupServiceImpl implements GroupService{
         }
     }
 
+    private void validateNameIsUniqueRegardingId(String name, Long id) {
+        if (groupRepository.existsWithNameAndNotId(name, id)) {
+            throw new NameNotUniqueException(name);
+        }
+    }
+
     private void validateParams(String pName, String pDescription) {
-        validateNameIsUnique(pName);
         Utils.validateString(pName, true, 100);
         Utils.validateString(pDescription, false, 255);
     }

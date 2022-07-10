@@ -77,6 +77,11 @@ public class GroupRepositoryFakeImpl implements GroupRepository {
     }
 
     @Override
+    public boolean existsWithNameAndNotId(String name, Long id) {
+        return false;
+    }
+
+    @Override
     public boolean existsWithId(Long id) {
         return groups.stream().anyMatch(g -> g.getId().equals(id));
     }

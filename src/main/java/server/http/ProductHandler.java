@@ -56,7 +56,7 @@ public class ProductHandler implements HttpHandler {
         Headers responseHeaders = exchange.getResponseHeaders();
         responseHeaders.add("Access-Control-Allow-Origin", "*");
         if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-            responseHeaders.add("Access-Control-Allow-Methods", "GET, OPTIONS");
+            responseHeaders.add("Access-Control-Allow-Methods", "GET, DELETE, PATCH, PUT, OPTIONS");
             responseHeaders.add("Access-Control-Allow-Headers", "Content-Type,Authorization");
             exchange.sendResponseHeaders(204, -1);
         }
@@ -70,10 +70,10 @@ public class ProductHandler implements HttpHandler {
             JSONObject object = Utils.getRequestBody(exchange);
 
             if (!object.isNull("add")) {
-                productService.addProducts(productId, Integer.parseInt((String) object.get("add")));
+                productService.addProducts(productId, Integer.parseInt(object.get("add").toString()));
             }
             else if (!object.isNull("take")) {
-                productService.takeProducts(productId, Integer.parseInt((String) object.get("take")));
+                productService.takeProducts(productId, Integer.parseInt(object.get("take").toString()));
             }
             Utils.sendResponseNoContent(exchange, 204);
         } catch (InvalidNumberException e) {
@@ -116,8 +116,8 @@ public class ProductHandler implements HttpHandler {
                     (String) object.get("name"),
                     (String) object.get("description"),
                     (String) object.get("producer"),
-                    Double.parseDouble((String) object.get("price")),
-                    Long.parseLong((String) object.get("groupId")));
+                    Double.parseDouble(object.get("price").toString()),
+                    Long.parseLong(object.get("groupId").toString()));
 
             Utils.sendResponseNoContent(exchange, 204);
         } catch (JSONException | NameNotUniqueException | InvalidStringException | InvalidNumberException e) {
@@ -140,9 +140,9 @@ public class ProductHandler implements HttpHandler {
                         (String) object.get("name"),
                         (String) object.get("description"),
                         (String) object.get("producer"),
-                        Integer.parseInt((String) object.get("quantity")),
-                        Double.parseDouble((String) object.get("price")),
-                        Long.parseLong((String) object.get("groupId"))
+                        Integer.parseInt(object.get("quantity").toString()),
+                        Double.parseDouble(object.get("price").toString()),
+                        Long.parseLong(object.get("groupId").toString())
                 );
 
                 byte[] bytes = Utils.getResponseBytes("result", product.getId());
