@@ -13,7 +13,9 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -126,10 +128,22 @@ public class Utils {
         return new JSONObject(new String(bodyBytes));
     }
 
-
-
-
-
-
+    public static Map<String, String> getQueryParams(String query) {
+        if(query == null) {
+            return null;
+        }
+        
+        String substr = query.split("\\?")[1];
+        Map<String, String> result = new HashMap<>();
+        for (String param : substr.split("&")) {
+            String[] entry = param.split("=");
+            if (entry.length > 1) {
+                result.put(entry[0], entry[1]);
+            }else{
+                result.put(entry[0], "");
+            }
+        }
+        return result;
+    }
 
 }

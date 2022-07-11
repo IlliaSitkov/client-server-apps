@@ -2,7 +2,6 @@ package repository;
 
 import exceptions.SQLExceptionRuntime;
 import utils.DBUtils;
-import utils.SQLQueries;
 
 import java.sql.*;
 
@@ -88,9 +87,4 @@ public abstract class AbstractRepository {
         }
     }
     
-    private void enableFKs() throws SQLException {
-    	Statement st = connection.createStatement();
-		st.executeUpdate(SQLQueries.ENABLE_FOREIGN_KEYS);
-		st.close();
-    }
 }

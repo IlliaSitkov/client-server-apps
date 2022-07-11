@@ -1,8 +1,9 @@
 package server.https;
 
 import com.sun.net.httpserver.*;
+
+import server.http.LoginHandler;
 import server.http.ProductHandler;
-import server.http.SimpleHttpServer;
 import utils.Routes;
 
 import javax.net.ssl.*;
@@ -21,7 +22,7 @@ public class SimpleHttpsServer {
 
         try {
             // setup the socket address
-            InetSocketAddress address = new InetSocketAddress(8765);
+            InetSocketAddress address = new InetSocketAddress(8766);
 
             // initialise the HTTPS server
             httpsServer = HttpsServer.create(address, 0);
@@ -63,7 +64,9 @@ public class SimpleHttpsServer {
                 }
             });
             HttpContext context = httpsServer.createContext(Routes.PRODUCT_ROUTE, new ProductHandler());
+            httpsServer.createContext(Routes.LOGIN_ROUTE, new LoginHandler());
             context.setAuthenticator(new Auth());
+            
             httpsServer.setExecutor(Executors.newCachedThreadPool());
             httpsServer.start();
 
@@ -92,7 +95,9 @@ public class SimpleHttpsServer {
 
     public static void main(String[] args) throws Exception {
         SimpleHttpsServer httpsServer = new SimpleHttpsServer();
+        System.out.println("HTTPS Server has been started..");
     }
+    
 
 }
 

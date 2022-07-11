@@ -13,10 +13,12 @@ public class SimpleHttpServer {
 
     public SimpleHttpServer() throws IOException {
         server = HttpServer.create();
-        server.bind(new InetSocketAddress(8765), 0);
+        server.bind(new InetSocketAddress(8766), 0);
 
         HttpContext context = server.createContext(Routes.PRODUCT_ROUTE, new ProductHandler());
 
+        server.createContext(Routes.LOGIN_ROUTE, new LoginHandler());
+        
         context.setAuthenticator(new Auth());
 
         server.setExecutor(Executors.newFixedThreadPool(5));
@@ -40,6 +42,7 @@ public class SimpleHttpServer {
 
     public static void main(String[] args) throws Exception {
         SimpleHttpServer httpServer = new SimpleHttpServer();
+        System.out.println("HTTP Server has been started..");
     }
 
 }

@@ -111,4 +111,29 @@ public class SQLQueries {
     		+ "group_id = ? \n"
     		+ "WHERE product_id = ?;";
 
+    //--------------------------------------------------
+    
+    public static final String CREATE_USER_TABLE = 
+    		"CREATE TABLE IF NOT EXISTS users (\n"
+    				+ "user_id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+    				+ "user_name VARCHAR(50) NOT NULL UNIQUE,\n"
+    				+ "password VARCHAR(50) NOT NULL \n"
+    		+ ");";
+    
+    public static final String INSERT_HARDCODED_USERS =
+    		"INSERT INTO users(user_name, password) \n"
+    		+ "VALUES (\"user1\", \"rootr1\"), \n"
+    		+ "(\"user2\", \"rootr2\"), \n"
+    		+ "(\"user3\", \"rootr3\");";
+    
+    public static final String USER_FIND_BY_ID =
+    		"SELECT * FROM users WHERE user_id = ?;";
+    
+    public static final String USER_FIND_BY_USERNAME =
+    		"SELECT * FROM users WHERE user_name = ?;";
+    
+    public static final String USER_FIND_ALL =
+    		"SELECT * FROM users;";
+    
+    
 }

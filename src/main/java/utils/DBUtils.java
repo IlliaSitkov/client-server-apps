@@ -2,6 +2,7 @@ package utils;
 
 import model.Group;
 import model.Product;
+import model.User;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -52,8 +53,21 @@ public class DBUtils {
         }
         return list;
     }
-
-
+    
+    public static List<User> resultSetToUserList(ResultSet resultSet) throws SQLException {
+    	List<User> list = new ArrayList<>();
+        while (resultSet.next()) {
+            list.add(
+                    new User(
+                            resultSet.getLong("user_id"),
+                            resultSet.getString("user_name"),
+                            resultSet.getString("password"))
+                    );
+        }
+        return list;
+    }
+    
+    
 
 
 }
