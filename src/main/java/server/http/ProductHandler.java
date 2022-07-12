@@ -47,19 +47,16 @@ public class ProductHandler implements HttpHandler {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
-            Utils.sendResponse(exchange, bytes, 400);
+            Utils.processException(exchange, e.getMessage(), 400);
         }
     }
 
     private void handleOptions(HttpExchange exchange) throws IOException {
         Headers responseHeaders = exchange.getResponseHeaders();
         responseHeaders.add("Access-Control-Allow-Origin", "*");
-        if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-            responseHeaders.add("Access-Control-Allow-Methods", "GET, DELETE, PATCH, PUT, OPTIONS");
-            responseHeaders.add("Access-Control-Allow-Headers", "Content-Type,Authorization");
-            exchange.sendResponseHeaders(204, -1);
-        }
+        responseHeaders.add("Access-Control-Allow-Methods", "GET, DELETE, PATCH, PUT, OPTIONS");
+        responseHeaders.add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        exchange.sendResponseHeaders(204, -1);
     }
 
     private void handlePatch(HttpExchange exchange) throws IOException {
@@ -78,12 +75,10 @@ public class ProductHandler implements HttpHandler {
             Utils.sendResponseNoContent(exchange, 204);
         } catch (InvalidNumberException e) {
             e.printStackTrace();
-            byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
-            Utils.sendResponse(exchange, bytes, 409);
+            Utils.processException(exchange, e.getMessage(), 409);
         } catch (ProductNotFoundException | PathVariableNotFound e) {
             e.printStackTrace();
-            byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
-            Utils.sendResponse(exchange, bytes, 404);
+            Utils.processException(exchange, e.getMessage(), 404);
         }
     }
 
@@ -99,8 +94,7 @@ public class ProductHandler implements HttpHandler {
                 Utils.sendResponseNoContent(exchange, 204);
             } catch (ProductNotFoundException | PathVariableNotFound e) {
                 e.printStackTrace();
-                byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
-                Utils.sendResponse(exchange, bytes, 404);
+                Utils.processException(exchange, e.getMessage(), 404);
             }
         }
     }
@@ -122,12 +116,10 @@ public class ProductHandler implements HttpHandler {
             Utils.sendResponseNoContent(exchange, 204);
         } catch (JSONException | NameNotUniqueException | InvalidStringException | InvalidNumberException e) {
             e.printStackTrace();
-            byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
-            Utils.sendResponse(exchange, bytes, 409);
+            Utils.processException(exchange, e.getMessage(), 409);
         } catch (ProductNotFoundException | PathVariableNotFound | GroupNotFoundException e) {
             e.printStackTrace();
-            byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
-            Utils.sendResponse(exchange, bytes, 404);
+            Utils.processException(exchange, e.getMessage(), 404);
         }
     }
 
@@ -149,12 +141,10 @@ public class ProductHandler implements HttpHandler {
                 Utils.sendResponse(exchange, bytes, 201);
             } catch (JSONException | NameNotUniqueException | InvalidStringException | InvalidNumberException e) {
                 e.printStackTrace();
-                byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
-                Utils.sendResponse(exchange, bytes, 409);
+                Utils.processException(exchange, e.getMessage(), 409);
             } catch (GroupNotFoundException e) {
                 e.printStackTrace();
-                byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
-                Utils.sendResponse(exchange, bytes, 404);
+                Utils.processException(exchange, e.getMessage(), 404);
             }
         } else {
             throw new MethodNotSupported("POST", uri);
@@ -174,8 +164,7 @@ public class ProductHandler implements HttpHandler {
                 Utils.sendResponse(exchange, bytes, 200);
             } catch (ProductNotFoundException | PathVariableNotFound e) {
                 e.printStackTrace();
-                byte[] bytes =  Utils.getResponseBytes("message", e.getMessage());
-                Utils.sendResponse(exchange, bytes, 404);
+                Utils.processException(exchange, e.getMessage(), 404);
             }
         }
     }
