@@ -59,7 +59,6 @@ public class DBUtils {
         while (resultSet.next()) {
             list.add(
                     new User(
-                            resultSet.getLong("user_id"),
                             resultSet.getString("user_name"),
                             resultSet.getString("password"))
                     );

@@ -115,19 +115,15 @@ public class SQLQueries {
     
     public static final String CREATE_USER_TABLE = 
     		"CREATE TABLE IF NOT EXISTS users (\n"
-    				+ "user_id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-    				+ "user_name VARCHAR(50) NOT NULL UNIQUE,\n"
+    				+ "user_name VARCHAR(50) PRIMARY KEY,\n"
     				+ "password VARCHAR(50) NOT NULL \n"
     		+ ");";
     
     public static final String INSERT_HARDCODED_USERS =
     		"INSERT INTO users(user_name, password) \n"
-    		+ "VALUES (\"user1\", \"rootr1\"), \n"
-    		+ "(\"user2\", \"rootr2\"), \n"
-    		+ "(\"user3\", \"rootr3\");";
-    
-    public static final String USER_FIND_BY_ID =
-    		"SELECT * FROM users WHERE user_id = ?;";
+    		+ "VALUES (\"user1\", \"5C000EB58E44DE5691FF011EC07A021D\"), \n"
+    		+ "(\"user2\", \"CA1A52AE7F2948597C591EAD8E644358\"), \n"
+    		+ "(\"user3\", \"C0E74CAF182C6D3C37CE5E15C6003C4E\");";
     
     public static final String USER_FIND_BY_USERNAME =
     		"SELECT * FROM users WHERE user_name = ?;";

@@ -11,8 +11,6 @@ import lombok.ToString;
 @AllArgsConstructor
 public class User {
 
-	private final Long id;
-	
 	private String username;
 	
 	private String password;

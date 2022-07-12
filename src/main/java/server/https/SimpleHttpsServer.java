@@ -7,6 +7,7 @@ import server.http.ProductHandler;
 import utils.Routes;
 
 import javax.net.ssl.*;
+
 import java.io.FileInputStream;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
@@ -65,7 +66,7 @@ public class SimpleHttpsServer {
             });
             HttpContext context = httpsServer.createContext(Routes.PRODUCT_ROUTE, new ProductHandler());
             httpsServer.createContext(Routes.LOGIN_ROUTE, new LoginHandler());
-            context.setAuthenticator(new Auth());
+            context.setAuthenticator(new ServerAuth());
             
             httpsServer.setExecutor(Executors.newCachedThreadPool());
             httpsServer.start();
@@ -81,20 +82,8 @@ public class SimpleHttpsServer {
         httpsServer.stop(2000);
     }
 
-    static class Auth extends Authenticator {
-        @Override
-        public Result authenticate(HttpExchange httpExchange) {
-            if ("/forbidden".equals(httpExchange.getRequestURI().toString()))
-                return new Failure(403);
-            else
-                return new Success(new HttpPrincipal("c0nst", "realm"));
-        }
-    }
-
-
-
     public static void main(String[] args) throws Exception {
-        SimpleHttpsServer httpsServer = new SimpleHttpsServer();
+        new SimpleHttpsServer();
         System.out.println("HTTPS Server has been started..");
     }
     

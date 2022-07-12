@@ -38,19 +38,6 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
         }
     }
 	
-	
-	@Override
-	public Optional<User> getById(Long id) {
-		try {
-			PreparedStatement st = connection.prepareStatement(SQLQueries.USER_FIND_BY_ID);
-			st.setLong(1, id);
-			st.execute();
-			List<User> list = DBUtils.resultSetToUserList(st.getResultSet());
-			return list.isEmpty() ? Optional.ofNullable(null) : Optional.of(list.get(0));
-		} catch (SQLException e) {
-			throw new SQLExceptionRuntime(e);
-		}
-	}
 
 	@Override
 	public Optional<User> getByUsername(String username) {
@@ -65,18 +52,31 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
 		}
 	}
 	
+	@Override
+	public List<User> getAll() {
+        try {
+        	Statement st = connection.createStatement();
+			st.execute(SQLQueries.USER_FIND_ALL);
+			return DBUtils.resultSetToUserList(st.getResultSet());
+		} catch (SQLException e) {
+			throw new SQLExceptionRuntime(e);
+		}
+	}
+	
+	
 	private void initData() {
         try {
         	Statement st = connection.createStatement();
             st.execute(SQLQueries.USER_FIND_ALL);
             if(st.getResultSet().next())
             	return;
-        	//Statement st = connection.createStatement();
         	st.clearBatch();
             st.executeUpdate(SQLQueries.INSERT_HARDCODED_USERS);
 		} catch (SQLException e) {
 			throw new SQLExceptionRuntime(e);
 		}
 	}
+
+	
 
 }

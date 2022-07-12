@@ -13,6 +13,7 @@ import model.User;
 import repository.user.UserRepository;
 import repository.user.UserRepositoryImpl;
 import utils.JWTManager;
+import utils.MD5Hasher;
 import utils.Utils;
 
 public class LoginHandler implements HttpHandler {
@@ -45,11 +46,12 @@ public class LoginHandler implements HttpHandler {
 		JSONObject object = Utils.getRequestBody(exchange);
 		String username = object.getString("username");
 		String password = object.getString("password");
+		String passwordHash = MD5Hasher.getHash(password);
 		Optional<User> opt = this.userRepo.getByUsername(username);
-		if(opt.isPresent() && opt.get().getPassword().equals(password)) {
+		if(opt.isPresent() && opt.get().getPassword().equals(passwordHash)) {
 			Headers responseHeaders = exchange.getResponseHeaders();
 	        responseHeaders.add("Access-Control-Allow-Origin", "*");
-	        responseHeaders.add("JW Token", JWTManager.createJWT(opt.get().getId().toString(), username));
+	        responseHeaders.add("JWToken", JWTManager.createJWT(username));
 	        exchange.sendResponseHeaders(200, 0);
 	        exchange.close();
 		} else {
