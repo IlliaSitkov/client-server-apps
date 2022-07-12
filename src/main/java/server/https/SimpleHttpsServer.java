@@ -2,6 +2,7 @@ package server.https;
 
 import com.sun.net.httpserver.*;
 
+import server.http.GroupHandler;
 import server.http.LoginHandler;
 import server.http.ProductHandler;
 import utils.Routes;
@@ -65,14 +66,17 @@ public class SimpleHttpsServer {
                 }
             });
             HttpContext context = httpsServer.createContext(Routes.PRODUCT_ROUTE, new ProductHandler());
+            HttpContext context2 = httpsServer.createContext(Routes.GROUP_ROUTE, new GroupHandler());
             httpsServer.createContext(Routes.LOGIN_ROUTE, new LoginHandler());
+            
             context.setAuthenticator(new ServerAuth());
+            context2.setAuthenticator(new ServerAuth());
             
             httpsServer.setExecutor(Executors.newCachedThreadPool());
             httpsServer.start();
 
         } catch (Exception exception) {
-            System.out.println("Failed to create HTTPS server on port " + 8765 + " of localhost");
+            System.out.println("Failed to create HTTPS server on port " + 8766 + " of localhost");
             exception.printStackTrace();
 
         }

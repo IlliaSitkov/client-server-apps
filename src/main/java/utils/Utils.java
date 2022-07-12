@@ -145,5 +145,11 @@ public class Utils {
         }
         return result;
     }
+    
+    public static void processException(HttpExchange exchange, String message, int statusCode) throws IOException {
+		System.out.println(message);
+        byte[] bytes =  Utils.getResponseBytes("message", message);
+        Utils.sendResponse(exchange, bytes, statusCode);
+	}
 
 }

@@ -56,7 +56,7 @@ public class GroupServiceImpl implements GroupService{
         Group group = getGroupById(groupId);
         group.setDescription(pDescription);
         group.setName(pName);
-        return groupRepository.update(group).get();
+        return groupRepository.update(group).orElseThrow(() -> new GroupNotFoundException(groupId));
     }
 
     @Override
