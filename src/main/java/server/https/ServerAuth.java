@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sun.net.httpserver.Authenticator;
+import utils.Utils;
 
 
 public class ServerAuth extends Authenticator {
@@ -17,6 +18,9 @@ public class ServerAuth extends Authenticator {
 	 @Override
      public Result authenticate(HttpExchange httpExchange) {
 		 try {
+			 if (httpExchange.getRequestMethod().equals("OPTIONS")) {
+				 return new Success(new HttpPrincipal("",""));
+			 }
 			 List<String> headerList = httpExchange.getRequestHeaders().get("JWToken");
 			 if(headerList == null || headerList.isEmpty()) 
 				 return new Failure(403);
@@ -28,6 +32,7 @@ public class ServerAuth extends Authenticator {
 				 return new Failure(403);
 			 return new Success(new HttpPrincipal(username, issuer));
 		 } catch(JwtException e) {
+			 Utils.addCorsHeaders(httpExchange);
 			 System.out.println(e.getMessage());
 			 return new Failure(403);
 		 }

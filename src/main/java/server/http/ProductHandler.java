@@ -52,10 +52,7 @@ public class ProductHandler implements HttpHandler {
     }
 
     private void handleOptions(HttpExchange exchange) throws IOException {
-        Headers responseHeaders = exchange.getResponseHeaders();
-        responseHeaders.add("Access-Control-Allow-Origin", "*");
-        responseHeaders.add("Access-Control-Allow-Methods", "GET, DELETE, PATCH, PUT, OPTIONS");
-        responseHeaders.add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        Utils.addCorsHeaders(exchange);
         exchange.sendResponseHeaders(204, -1);
     }
 
