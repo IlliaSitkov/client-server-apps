@@ -23,7 +23,7 @@ public class ServerAuth extends Authenticator {
 			 }
 			 List<String> headerList = httpExchange.getRequestHeaders().get("JWToken");
 			 if(headerList == null || headerList.isEmpty()) 
-				 return new Failure(403);
+				 return new Failure(400);
 			 String jwt = headerList.get(0);
 			 Map<String, Object> jwtMap = JWTManager.parseJWT(jwt);
 			 String username = (String)jwtMap.get(JWTManager.JWT_USERNAME);

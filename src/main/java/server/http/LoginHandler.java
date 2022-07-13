@@ -20,6 +20,8 @@ public class LoginHandler implements HttpHandler {
 	
 	private final UserRepository userRepo = UserRepositoryImpl.getInstance();
 	
+	private static final String JWT_HEADER_NAME = "Jwtoken";
+	
 	public LoginHandler() {
 		System.out.println("Login handler created");
 	}
@@ -28,12 +30,17 @@ public class LoginHandler implements HttpHandler {
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 		try {
-			if(exchange.getRequestMethod().equals("POST")) {
-				this.handlePost(exchange);
-			} else {
-				System.out.println(exchange.getRequestMethod());
-				System.out.println("Method not supported");
-				throw new RuntimeException("Method not supported");
+			switch(exchange.getRequestMethod()) {
+				case "POST" :
+					this.handlePost(exchange);
+					break;
+				case "OPTIONS" :
+					this.handleOptions(exchange);
+					break;
+				default :
+					System.out.println(exchange.getRequestMethod());
+					System.out.println("Method not supported");
+					throw new RuntimeException("Method not supported");
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -41,6 +48,11 @@ public class LoginHandler implements HttpHandler {
 			Utils.sendResponse(exchange, bytes, 400);
 		}
 	}
+	
+	private void handleOptions(HttpExchange exchange) throws IOException {
+        Utils.addCorsHeaders(exchange);
+        exchange.sendResponseHeaders(204, -1);
+    }
 	
 	private void handlePost(HttpExchange exchange) throws IOException {
 		JSONObject object = Utils.getRequestBody(exchange);
@@ -51,7 +63,8 @@ public class LoginHandler implements HttpHandler {
 		if(opt.isPresent() && opt.get().getPassword().equals(passwordHash)) {
 			Headers responseHeaders = exchange.getResponseHeaders();
 	        responseHeaders.add("Access-Control-Allow-Origin", "*");
-	        responseHeaders.add("JWToken", JWTManager.createJWT(username));
+	        responseHeaders.add("Access-Control-Expose-Headers", "*");
+	        responseHeaders.add(JWT_HEADER_NAME, JWTManager.createJWT(username));
 	        exchange.sendResponseHeaders(200, 0);
 	        exchange.close();
 		} else {
