@@ -14,8 +14,7 @@ import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import java.util.concurrent.Executors;
 
-//https://www.charlesproxy.com/documentation/faqs/localhost-ssl-traffic-fails-with-err_connection_closed/
-//https://support.code42.com/CP/Admin/On-premises/6/Configuring/Install_a_CA-signed_SSL_certificate_for_HTTPS_console_access
+
 public class SimpleHttpsServer {
 
     private HttpsServer httpsServer;
@@ -23,43 +22,34 @@ public class SimpleHttpsServer {
     public SimpleHttpsServer() {
 
         try {
-            // setup the socket address
-            InetSocketAddress address = new InetSocketAddress(8766);
+            InetSocketAddress address = new InetSocketAddress(HttpsServerConfig.PORT);
 
-            // initialise the HTTPS server
             httpsServer = HttpsServer.create(address, 0);
-            SSLContext sslContext = SSLContext.getInstance("TLS");
+            SSLContext sslContext = SSLContext.getInstance(HttpsServerConfig.PROTOCOL);
 
-            // initialise the keystore
-            char[] password = "123456".toCharArray();
-            KeyStore ks = KeyStore.getInstance("JKS");
-            FileInputStream fis = new FileInputStream("keyStore/localhost.jks");
+            char[] password = HttpsServerConfig.KEY_STORE_PASS.toCharArray();
+            KeyStore ks = KeyStore.getInstance(HttpsServerConfig.KEY_STORE_TYPE);
+            FileInputStream fis = new FileInputStream(HttpsServerConfig.KEY_STORE_PATH);
             ks.load(fis, password);
 
-            // setup the key manager factory
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(HttpsServerConfig.ALGORITHM);
             kmf.init(ks, password);
 
-            // setup the trust manager factory
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(HttpsServerConfig.ALGORITHM);
             tmf.init(ks);
 
-            // setup the HTTPS context and parameters
             sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
             httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
                 public void configure(HttpsParameters params) {
                     try {
-                        // initialise the SSL context
                         SSLContext context = getSSLContext();
                         SSLEngine engine = context.createSSLEngine();
                         params.setNeedClientAuth(false);
                         params.setCipherSuites(engine.getEnabledCipherSuites());
                         params.setProtocols(engine.getEnabledProtocols());
 
-                        // Set the SSL parameters
                         SSLParameters sslParameters = context.getSupportedSSLParameters();
                         params.setSSLParameters(sslParameters);
-
                     } catch (Exception ex) {
                         System.out.println("Failed to create HTTPS port");
                     }
@@ -76,7 +66,7 @@ public class SimpleHttpsServer {
             httpsServer.start();
 
         } catch (Exception exception) {
-            System.out.println("Failed to create HTTPS server on port " + 8766 + " of localhost");
+            System.out.println("Failed to create HTTPS server on port " + HttpsServerConfig.PORT + " of localhost");
             exception.printStackTrace();
 
         }
