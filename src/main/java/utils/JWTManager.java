@@ -17,7 +17,7 @@ public class JWTManager {
 
 	private static final String SECRET_KEY = "ATBVDWEXFZH2J3M5N6P8R9SAUCVDWFYGZH3K4M5P7Q8RATBUCVEXFYG2J3";
 	
-	private static final long JWT_TTL_MILLIS = 300000;
+	private static final long JWT_TTL_MILLIS = 600000;
 	
 	public static final String JWT_USERNAME = "username";
 	
