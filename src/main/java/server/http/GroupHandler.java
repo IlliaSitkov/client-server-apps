@@ -77,6 +77,7 @@ public class GroupHandler implements HttpHandler {
 						(String)object.getString("description")
 					);
 				byte[] bytes = Utils.getResponseBytes("result", group.getId());
+				System.out.println("Group created");
 	            Utils.sendResponse(exchange, bytes, 201);
 			} catch(NameNotUniqueException e) {
 				Utils.processException(exchange, e.getMessage(), 409);
@@ -91,6 +92,7 @@ public class GroupHandler implements HttpHandler {
 			long id = Utils.getIdFromPath(uri, Routes.GROUP_ROUTE);
 			JSONObject object = Utils.getRequestBody(exchange);
 			this.groupService.updateGroup(id, (String)object.get("name"), (String)object.get("description"));
+			System.out.println("Group updated");
 			Utils.sendResponseNoContent(exchange, 204);
 		} catch(NameNotUniqueException e) {
 			Utils.processException(exchange, e.getMessage(), 409);
@@ -104,6 +106,7 @@ public class GroupHandler implements HttpHandler {
 		try {
 			long groupId = Utils.getIdFromPath(uri, Routes.GROUP_ROUTE);
 			this.groupService.deleteGroup(groupId);
+			System.out.println("Group deleted");
 			Utils.sendResponseNoContent(exchange, 204);
 		} catch(GroupNotFoundException e) {
 			Utils.processException(exchange, e.getMessage(), 404);
@@ -114,7 +117,7 @@ public class GroupHandler implements HttpHandler {
 		Headers responseHeaders = exchange.getResponseHeaders();
         responseHeaders.add("Access-Control-Allow-Origin", "*");
         responseHeaders.add("Access-Control-Allow-Methods", "GET, DELETE, POST, PUT, OPTIONS");
-        responseHeaders.add("Access-Control-Allow-Headers", "Content-Type,Authorization");
+        responseHeaders.add("Access-Control-Allow-Headers", "Content-Type, JWToken");
         exchange.sendResponseHeaders(204, -1);
 	}
 	

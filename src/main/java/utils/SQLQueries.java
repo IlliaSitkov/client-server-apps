@@ -11,7 +11,7 @@ public class SQLQueries {
             "CREATE TABLE IF NOT EXISTS groups (\n" +
             "    group_id BIGINT PRIMARY KEY,\n" +
             "    group_name VARCHAR(100) CHECK (length(group_name) > 1) NOT NULL UNIQUE,\n" +
-            "    group_description VARCHAR(255)\n" +
+            "    group_description VARCHAR(255) NOT NULL\n" +
             ");";
 
     public static final String GROUP_CREATE =
@@ -23,7 +23,7 @@ public class SQLQueries {
             "WHERE lower(group_name) LIKE lower(?);";
     
     public static final String GROUPS_FIND_ALL =
-    		"SELECT * FROM groups;";
+    		"SELECT * FROM groups ORDER BY group_name;";
     
     public static final String GROUPS_DELETE_ALL =
             ENABLE_FOREIGN_KEYS + "DELETE FROM groups;";
