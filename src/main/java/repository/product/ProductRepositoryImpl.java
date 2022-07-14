@@ -66,7 +66,7 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
     @Override
-    public Optional<Product> update(Product p) {
+    public synchronized Optional<Product> update(Product p) {
         try {
         	PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_UPDATE_BY_ID);
         	st.setString(1, p.getName());
@@ -84,7 +84,7 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
     @Override
-    public boolean delete(Long id) {
+    public synchronized boolean delete(Long id) {
         if (!existsWithId(id)) {
             throw new ProductNotFoundException(id);
         }
@@ -98,7 +98,7 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
     @Override
-    public Optional<Product> getById(Long id) {
+    public synchronized Optional<Product> getById(Long id) {
     	try {
 			PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_FIND_BY_ID);
 			st.setLong(1, id);
@@ -122,7 +122,7 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
     @Override
-    public void deleteAll() {
+    public synchronized void deleteAll() {
     	try {
 			Statement st = connection.createStatement();
 			st.executeUpdate(SQLQueries.PRODUCT_DELETE_ALL);
@@ -132,7 +132,7 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
     @Override
-    public boolean deleteByName(String name) {
+    public synchronized boolean deleteByName(String name) {
     	try {
     		PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_DELETE_BY_NAME);
 			st.setString(1, name);
@@ -143,7 +143,7 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
     
     @Override
-    public boolean deleteOfGroup(Long groupId) {
+    public synchronized boolean deleteOfGroup(Long groupId) {
     	try {
     		PreparedStatement st = connection.prepareStatement(SQLQueries.PRODUCT_DELETE_BY_GROUP_ID);
 			st.setLong(1, groupId);
@@ -212,7 +212,7 @@ public class ProductRepositoryImpl extends AbstractRepository implements Product
     }
 
 
-    public List<Product> listByCriteria(Map<SortCriteria, SortOrder> sortMap) {
+    public synchronized List<Product> listByCriteria(Map<SortCriteria, SortOrder> sortMap) {
         if (sortMap.isEmpty()) {
             return getAll();
         }

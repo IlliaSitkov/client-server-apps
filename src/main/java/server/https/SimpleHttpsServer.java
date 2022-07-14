@@ -84,13 +84,7 @@ public class SimpleHttpsServer {
 
     public void stop() {
         httpsServer.stop(2000);
-    }
-
-    public static void main(String[] args) throws Exception {
-        new SimpleHttpsServer();
-        System.out.println("HTTPS Server has been started..");
-    }
-    
+    } 
 
 }
 

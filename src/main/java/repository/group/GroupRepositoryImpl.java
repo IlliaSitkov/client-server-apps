@@ -56,7 +56,7 @@ public class GroupRepositoryImpl  extends AbstractRepository implements GroupRep
     }
 
     @Override
-    public Optional<Group> update(Group g) {
+    public synchronized Optional<Group> update(Group g) {
     	 try {
 			PreparedStatement st = connection.prepareStatement(SQLQueries.GROUP_UPDATE_BY_ID);
 			st.setString(1, g.getName());
@@ -70,7 +70,7 @@ public class GroupRepositoryImpl  extends AbstractRepository implements GroupRep
     }
 
     @Override
-    public boolean delete(Long id) {
+    public synchronized boolean delete(Long id) {
     	try {
 			PreparedStatement st = connection.prepareStatement(SQLQueries.GROUP_DELETE_BY_ID);
 			st.setLong(1, id);
@@ -81,7 +81,7 @@ public class GroupRepositoryImpl  extends AbstractRepository implements GroupRep
     }
 
     @Override 
-    public boolean deleteByName(String name) {
+    public synchronized boolean deleteByName(String name) {
     	try {
 			PreparedStatement st = connection.prepareStatement(SQLQueries.GROUP_DELETE_BY_NAME);
 			st.setString(1, name);
@@ -92,7 +92,7 @@ public class GroupRepositoryImpl  extends AbstractRepository implements GroupRep
     }
     
     @Override
-    public Optional<Group> getById(Long id) {
+    public synchronized Optional<Group> getById(Long id) {
     	try {
 			PreparedStatement st = connection.prepareStatement(SQLQueries.GROUP_FIND_BY_ID);
 			st.setLong(1, id);
@@ -105,7 +105,7 @@ public class GroupRepositoryImpl  extends AbstractRepository implements GroupRep
     }
 
     @Override
-    public List<Group> getAll() {
+    public synchronized List<Group> getAll() {
     	try {
 			Statement st = connection.createStatement();
 			st.execute(SQLQueries.GROUPS_FIND_ALL);
